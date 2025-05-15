@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alcohol Direct - Fast & Affordable Alcohol Delivery</title>
+    <style>
+        :root {
+  --primary: #2e1f12;      /* Deep Oak Brown */
+  --secondary: #c99e6e;    /* Aged Whiskey Gold */
+  --accent: #7b4b2a;       /* Burnt Copper */
+  --light: #f4f1ec;        /* Soft Linen */
+  --dark: #1a120d;         /* Charred Wood */
+  --success: #4caf50;
+  --error: #f44336;
+}
+
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo span {
+            color: var(--secondary);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        nav ul li a:hover {
+            color: var(--secondary);
+        }
+        
+        .action-buttons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #ff8f00;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            margin-right: 0.5rem;
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .cart-icon {
+            margin-left: 1rem;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/api/placeholder/1200/600');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .search-bar {
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            font-size: 1rem;
+        }
+        
+        .search-bar button {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .search-bar button:hover {
+            background-color: #ff8f00;
+        }
+        
+        .features {
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .features h2 {
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        
+        .feature-cards {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .feature-card {
+            flex: 1;
+            min-width: 250px;
+            padding: 2rem;
+            margin: 1rem;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card svg {
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .categories {
+            padding: 4rem 0;
+            background-color: #f9f9f9;
+        }
+        
+        .categories h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .category-tab {
+            padding: 0.8rem 1.5rem;
+            margin: 0.5rem;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .category-tab.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .category-tab:hover:not(.active) {
+            background-color: #f1f1f1;
+        }
+        
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .product-image {
+            height: 200px;
+            background-color: #f1f1f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-image img {
+            max-height: 180px;
+            max-width: 90%;
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        .product-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-price {
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .product-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .quantity-control button {
+            width: 30px;
+            height: 30px;
+            background-color: #f1f1f1;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .quantity-control input {
+            width: 40px;
+            height: 30px;
+            text-align: center;
+            border: none;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+        }
+        
+        .add-to-cart {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .add-to-cart:hover {
+            background-color: #ff8f00;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 4rem 0 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-section ul li a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-section ul li a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid #444;
+            margin-top: 2rem;
+        }
+        
+        .social-icons {
+            display: flex;
+            margin-top: 1rem;
+        }
+        
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+            border-radius: 50%;
+            margin-right: 1rem;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .social-icons a:hover {
+            background-color: var(--secondary);
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .cart-modal-content {
+            width: 700px;
+            max-width: 90%;
+        }
+        
+        .cart-items {
+            margin-bottom: 2rem;
+        }
+        
+        .cart-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            background-color: #f1f1f1;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cart-item-details {
+            flex: 1;
+        }
+        
+        .cart-item-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cart-item-price {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .cart-item-quantity {
+            width: 100px;
+            margin-right: 1rem;
+        }
+        
+        .cart-item-remove {
+            color: var(--error);
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .cart-summary {
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .cart-summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cart-summary-total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #ddd;
+        }
+        
+        .age-verification {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .age-verification label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .age-verification input {
+            margin-right: 0.5rem;
+        }
+        
+        .id-upload {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .id-upload:hover {
+            border-color: var(--primary);
+        }
+        
+        .id-upload-input {
+            display: none;
+        }
+        
+        .id-upload-label {
+            cursor: pointer;
+        }
+        
+        .id-preview {
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .id-preview img {
+            max-width: 100%;
+            max-height: 200px;
+        }
+        
+        .checkout-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        
+        .checkout-step {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            background-color: #f1f1f1;
+            position: relative;
+        }
+        
+        .checkout-step.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .checkout-step:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 15px solid #f1f1f1;
+            z-index: 1;
+        }
+        
+        .checkout-step.active:not(:last-child)::after {
+            border-left-color: var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+            }
+            
+            nav ul {
+                margin: 1rem 0;
+            }
+            
+            .feature-cards {
+                flex-direction: column;
+            }
+            
+            .checkout-steps {
+                flex-direction: column;
+            }
+            
+            .checkout-step:not(:last-child)::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="#" class="logo">Alcohol<span>Direct</span></a>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Home</a></li>
+                    <li><a href="#">Shop</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="action-buttons">
+                <button class="btn btn-outline" onclick="openModal('login-modal')">Login</button>
+                <button class="btn btn-primary" onclick="openModal('signup-modal')">Sign Up</button>
+                <div class="cart-icon" onclick="openModal('cart-modal')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    <span class="cart-count" id="cart-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Sophisticated Spirits, Delivered</h1>
+            <p>Premium liquor delivered to your doorstep in 60 minutes or less. Unbeatable prices, exceptional selection.</p>
+            <div class="search-bar">
+                <input type="text" placeholder="Search for your favorite drinks...">
+                <button>Search</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2>Why Choose Alcohol Direct?</h2>
+            <div class="feature-cards">
+                <div class="feature-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c28133" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"></path><path d="M3 9l2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"></path><path d="M12 3v6"></path></svg>
+                    <h3>Fast Delivery</h3>
+                    <p>Get your order in 60 minutes or less, right to your doorstep.</p>
+                </div>
+                <div class="feature-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c28133" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 6v2"></path><path d="M12 16v2"></path></svg>
+                    <h3>Best Prices</h3>
+                    <p>We offer the most competitive prices in the market, guaranteed.</p>
+                </div>
+                <div class="feature-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c28133" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    <h3>Wide Selection</h3>
+                    <p>Browse through our extensive collection of premium spirits.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="categories">
+        <div class="container">
+            <h2>Shop By Category</h2>
+            <div class="category-tabs">
+                <div class="category-tab active" data-category="all">All</div>
+                <div class="category-tab" data-category="whiskey">Whiskey</div>
+                <div class="category-tab" data-category="vodka">Vodka</div>
+                <div class="category-tab" data-category="rum">Rum</div>
+                <div class="category-tab" data-category="gin">Gin</div>
+                <div class="category-tab" data-category="tequila">Tequila</div>
+                <div class="category-tab" data-category="brandy">Brandy</div>
+            </div>
+            <div class="products">
+                <!-- Whiskey Products -->
+                <div class="product-card" data-category="whiskey">
+                    <div class="product-image">
+                        <img src="/api/placeholder/200/200" alt="Whiskey 1">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Premium Scotch Whiskey</h3>
+                        <div class="product-price">$39.99</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="qty-decrease">-</button>
+                                <input type="number" value="1" min="1" class="qty-input">
+                                <button class="qty-increase">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="1" data-name="Premium Scotch Whiskey" data-price="39.99">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card" data-category="whiskey">
+                    <div class="product-image">
+                        <img src="/api/placeholder/200/200" alt="Whiskey 2">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Bourbon Whiskey</h3>
+                        <div class="product-price">$29.99</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="qty-decrease">-</button>
+                                <input type="number" value="1" min="1" class="qty-input">
+                                <button class="qty-increase">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="2" data-name="Bourbon Whiskey" data-price="29.99">Add</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vodka Products -->
+                <div class="product-card" data-category="vodka">
+                    <div class="product-image">
+                        <img src="/api/placeholder/200/200" alt="Vodka 1">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Premium Vodka</h3>
+                        <div class="product-price">$24.99</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="qty-decrease">-</button>
+                                <input type="number" value="1" min="1" class="qty-input">
+                                <button class="qty-increase">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="3" data-name="Premium Vodka" data-price="24.99">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card" data-category="vodka">
+                    <div class="product-image">
+                        <img src="/api/placeholder/200/200" alt="Vodka 2">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Flavored Vodka</h3>
+                        <div class="product-price">$19.99</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="qty-decrease">-</button>
+                                <input type="number" value="1" min="1" class="qty-input">
+                                <button class="qty-increase">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="4" data-name="Flavored Vodka" data-price="19.99">Add</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rum Products -->
+                <div class="product-card" data-category="rum">
+                    <div class="product-image">
+                        <img src="/api/placeholder/200/200" alt="Rum 1">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Dark Rum</h3>
+                        <div class="product-price">$22.99</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="qty-decrease">-</button>
+                                <input type="number" value="1" min="1" class="qty-input">
+                                <button class="qty-increase">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="5" data-name="Dark Rum" data-price="22.99">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card" data-category="rum">
+                    <div class="product-image">
+                        <img src="/api/placeholder/200/200" alt="Rum 2">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Spiced Rum</h3>
+                        <div class="product-price">$21.99</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="qty-decrease">-</button>
+                                <input type="number" value="1" min="1" class="qty-input">
+                                <button class="qty-increase">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="6" data-name="Spiced Rum" data-price="21.99">Add</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gin Products -->
+                <div class="product-card" data-category="gin">
+                    <div class="product-image">
+                        <img src="/api/placeholder/200/200" alt="Gin 1">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">London Dry Gin</h3>
+                        <div class="product-price">$27.99</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="qty-decrease">-</button>
+                                <input type="number" value="1" min="1" class="qty-input">
+                                <button class="qty-increase">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="7" data-name="London Dry Gin" data-price="27.99">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card" data-category="gin">
+                    <div class="product-image">
+                        <img src="/api/placeholder/200/200" alt="Gin 2">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Botanical Gin</h3>
+                        <div class="product-price">$31.99</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="qty-decrease">-</button>
+                                <input type="number" value="1" min="1" class="qty-input">
+                                <button class="qty-increase">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="8" data-name="Botanical Gin" data-price="31.99">Add</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tequila Products -->
+                <div class="product-card" data-category="tequila">
+                    <div class="product-image">
+                        <img src="/api/placeholder/200/200" alt="Tequila 1">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Silver Tequila</h3>
+                        <div class="product-price">$28.99</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="qty-decrease">-</button>
+                                <input type="number" value="1" min="1" class="qty-input">
+                                <button class="qty-increase">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="9" data-name="Silver Tequila" data-price="

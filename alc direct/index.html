@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alcohol Direct - Fast & Affordable Alcohol Delivery</title>
+
+  <!-- Improved favicon -->
+  <link rel="icon" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/5.5.2/collection/components/icon/svg/wine.svg" type="image/svg+xml">
+  
+  <!-- Modern font from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/@geoapify/geocoder-autocomplete/styles/minimal.css" />
+  
+  <!-- Font Awesome for better icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- JS Libraries (order matters!) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@geoapify/geocoder-autocomplete@1.2.0/dist/geocoder-autocomplete.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+  <!-- Your zone.js or custom scripts -->
+  <script src="zone.js" defer></script>
+
+  <!-- Your custom styles -->
+
+  <style>
+    /* Toast animation for login success */
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-10px); }
+      10% { opacity: 1; transform: translateY(0); }
+      90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-10px); }
+    }
+    
+    /* Modern color scheme with more premium feel */
+    :root {
+      --primary: #1e1207; /* Darker, richer brown */
+      --secondary: #ddb456; /* Warmer gold */
+      --accent: #b35e24; /* Deeper orange */
+      --light: #f8f5ef; /* Warmer off-white */
+      --dark: #0f0805; /* Almost black */
+      --success: #34a853; /* Google-style green */
+      --error: #ea4335; /* Google-style red */
+      --gray-light: #f1f1f1;
+      --gray: #e0e0e0;
+      --gray-dark: #757575;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+      --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background-color: var(--light);
+      color: var(--dark);
+      position: relative;
+      line-height: 1.6;
+    }
+        
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-lg);
+    }
+        
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+        
+    .header-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2rem;
+      text-align: center;
+    }
+        
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      letter-spacing: 0.5px;
+    }
+        
+    .logo span {
+      color: var(--secondary);
+      font-weight: 700;
+    }
+    
+    /* Improved navigation */
+    nav ul {
+      display: flex;
+      list-style: none;
+      flex-wrap: nowrap;
+      gap: 1rem;
+      white-space: nowrap;
+    }
+        
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      transition: var(--transition);
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+    }
+        
+    nav ul li a:hover {
+      color: var(--secondary);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    nav ul li a.active {
+      color: var(--secondary);
+      border-bottom: 2px solid var(--secondary);
+    }
+        
+    .action-buttons {
+      display: flex;
+      align-items: center;
+    }
+        
+    /* Enhanced button styles */
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+      font-size: 0.95rem;
+      letter-spacing: 0.3px;
+    }
+        
+    .btn-primary {
+      background-color: var(--secondary);
+      color: var(--dark);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+        
+    .btn-primary:hover {
+      background-color: #c99533;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+        
+    .btn-outline {
+      background-color: transparent;
+      color: white;
+      border: 1.5px solid white;
+      margin-right: 0.5rem;
+    }
+        
+    .btn-outline:hover {
+      background-color: rgba(255,255,255,0.1);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    /* Improved cart icon */
+    .cart-icon {
+      margin-left: 1rem;
+      position: relative;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .cart-icon:hover {
+      transform: translateY(-2px);
+    }
+        
+    .cart-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background-color: var(--accent);
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    /* Enhanced hero section */
+    .hero {
+      background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/api/placeholder/1200/600');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      padding: 6rem 0 4rem;
+      text-align: center;
+    }
+        
+    .hero h1 {
+      font-size: 3.2rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+        
+    .hero p {
+      font-size: 1.3rem;
+      margin-bottom: 2.5rem;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+    
+    /* Enhanced map */
+    #map {
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      border: 4px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Improved features section */
+    .features {
+      padding: 5rem 0;
+      text-align: center;
+      background-color: white;
+    }
+        
+    .features h2 {
+      margin-bottom: 1rem;
+      font-size: 2.2rem;
+      color: var(--dark);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .features p.subtitle {
+      font-size: 1.1rem;
+      color: var(--gray-dark);
+      max-width: 700px;
+      margin: 0 auto 3rem;
+    }
+        
+    .feature-cards {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+        
+    .feature-card {
+      flex: 1;
+      min-width: 250px;
+      padding: 2.5rem 2rem;
+      margin: 1rem;
+      background-color: white;
+      box-shadow: var(--shadow-md);
+      border-radius: var(--radius-md);
+      transition: var(--transition);
+      border-top: 4px solid var(--secondary);
+    }
+        
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+    }
+        
+    .feature-card svg,
+    .feature-card i {
+      margin-bottom: 1.5rem;
+      color: var(--secondary);
+      font-size: 3rem;
+    }
+        
+    .feature-card h3 {
+      margin-bottom: 1rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .feature-card p {
+      color: var(--gray-dark);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    
+    /* Enhanced categories section */
+    .categories {
+      padding: 5rem 0;
+      background-color: var(--light);
+    }
+        
+    .categories h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .categories p.subtitle {
+      font-size: 1.1rem;
+      color: var(--gray-dark);
+      max-width: 700px;
+      margin: 0 auto 3rem;
+      text-align: center;
+    }
+        
+    .category-tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+        
+    .category-tab {
+      padding: 0.8rem 1.5rem;
+      margin: 0.5rem;
+      background-color: white;
+      border: 1px solid var(--gray);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 500;
+      box-shadow: var(--shadow-sm);
+    }
+        
+    .category-tab.active {
+      background-color: var(--secondary);
+      color: var(--dark);
+      border-color: var(--secondary);
+      font-weight: 600;
+      box-shadow: var(--shadow-md);
+    }
+        
+    .category-tab:hover:not(.active) {
+      background-color: var(--gray-light);
+      transform: translateY(-2px);
+    }
+    
+    /* Enhanced product grid */
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+        
+    .product-card {
+      background-color: white;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+      border: 1px solid var(--gray);
+    }
+        
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+    }
+        
+    .product-image {
+      height: 220px;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--gray);
+    }
+        
+    .product-image img {
+      height: 180px;
+      max-width: 100%;
+      object-fit: contain;
+    }
+        
+    .product-info {
+      padding: 1.5rem;
+    }
+        
+    .product-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark);
+      line-height: 1.4;
+    }
+        
+    .product-price {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.5rem;
+      margin-bottom: 1.2rem;
+    }
+        
+    .product-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+        
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--gray);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+        
+    .quantity-control button {
+      width: 32px;
+      height: 32px;
+      background-color: var(--gray-light);
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+    
+    .quantity-control button:hover {
+      background-color: var(--gray);
+    }
+        
+    .quantity-control input {
+      width: 40px;
+      height: 32px;
+      text-align: center;
+      border: none;
+      border-left: 1px solid var(--gray);
+      border-right: 1px solid var(--gray);
+      font-weight: 500;
+    }
+        
+    .add-to-cart {
+      background-color: var(--secondary);
+      color: var(--dark);
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+        
+    .add-to-cart:hover {
+      background-color: #c99533;
+      box-shadow: var(--shadow-md);
+    }
+    
+    /* Enhanced footer */
+    footer {
+      background-color: var(--dark);
+      color: white;
+      padding: 4rem 0 2rem;
+    }
+        
+    .footer-content {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+        
+    .footer-section {
+      flex: 1;
+      min-width: 200px;
+      margin-bottom: 2rem;
+    }
+        
+    .footer-section h3 {
+      margin-bottom: 1.5rem;
+      color: var(--secondary);
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+        
+    .footer-section ul {
+      list-style: none;
+    }
+        
+    .footer-section ul li {
+      margin-bottom: 0.8rem;
+    }
+        
+    .footer-section ul li a {
+      color: #bbb;
+      text-decoration: none;
+      transition: var(--transition);
+      display: inline-block;
+    }
+        
+    .footer-section ul li a:hover {
+      color: white;
+      transform: translateX(3px);
+    }
+        
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #444;
+      margin-top: 2rem;
+      color: #999;
+      font-size: 0.9rem;
+    }
+        
+    .social-icons {
+      display: flex;
+      margin-top: 1rem;
+    }
+        
+    .social-icons a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background-color: #333;
+      border-radius: 50%;
+      margin-right: 1rem;
+      color: white;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+        
+    .social-icons a:hover {
+      background-color: var(--secondary);
+      transform: translateY(-3px);
+    }
+    
+    /* Enhanced modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(3px);
+    }
+    
+    body.modal-open {
+      overflow: hidden;
+      height: 100vh;
+    }
+        
+    .modal-content {
+      background-color: white;
+      padding: 2.5rem;
+      border-radius: var(--radius-lg);
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: modalOpen 0.3s ease-out;
+    }
+    
+    @keyframes modalOpen {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+        
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.8rem;
+      border-bottom: 1px solid var(--gray);
+      padding-bottom: 1rem;
+    }
+        
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+        
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--gray-dark);
+      transition: var(--transition);
+    }
+    
+    .close-modal:hover {
+      color: var(--dark);
+    }
+        
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+        
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--dark);
+    }
+        
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--gray);
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+        
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(221, 180, 86, 0.2);
+    }
+        
+    .form-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
+    
+    /* Enhanced cart modal */
+    .cart-modal-content {
+      width: 700px;
+      max-width: 90%;
+      background-color: var(--light);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+        
+    .cart-items {
+      margin-bottom: 2rem;
+    }
+        
+    .cart-item {
+      display: flex;
+      align-items: center;
+      padding: 1.2rem;
+      border: 1px solid var(--gray);
+      border-radius: var(--radius-md);
+      background-color: white;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1rem;
+      gap: 1.2rem;
+      transition: var(--transition);
+    }
+    
+    .cart-item:hover {
+      box-shadow: var(--shadow-md);
+    }
+    
+    .cart-item-image {
+      width: 90px;
+      height: 90px;
+      background-color: white;
+      border: 1px solid var(--gray);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 0.5rem;
+    }
+    
+    .cart-item-image img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    
+    .cart-item-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+        
+    .cart-item-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+      font-size: 1.1rem;
+    }
+        
+    .cart-item-price {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+        
+    .cart-item-quantity {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    
+    .cart-item-quantity input {
+      width: 50px;
+      padding: 0.4rem;
+      font-size: 1rem;
+      text-align: center;
+      border: 1px solid var(--gray);
+      border-radius: var(--radius-sm);
+      background-color: white;
+      font-weight: 500;
+    }
+    
+    /* Hide native input number arrows */
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    .qty-input {
+      -moz-appearance: textfield; /* Firefox */
+    }
+    
+    .cart-item-quantity button {
+      background-color: var(--secondary);
+      color: var(--dark);
+      border: none;
+      padding: 0.4rem 0.7rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: var(--transition);
+      font-weight: 600;
+    }
+    
+    .cart-item-quantity button:hover {
+      background-color: #c99533;
+    }
+        
+    .cart-item-remove {
+      background-color: var(--error);
+      color: white;
+      padding: 0.4rem 0.75rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-left: 0.5rem;
+      font-weight: 500;
+    }
+    
+    .cart-item-remove:hover {
+      background-color: #d32f2f;
+    }
+        
+    .cart-summary {
+      padding: 1.5rem;
+      background-color: white;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray);
+    }
+        
+    .cart-summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+      font-size: 1.05rem;
+    }
+        
+    .cart-summary-total {
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--gray);
+      color: var(--dark);
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    /* Enhanced age verification */
+    .age-verification {
+      background-color: white;
+      padding: 2rem 0;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      border-bottom: 1px solid var(--gray);
+    }
+    
+    .age-verification p {
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      color: var(--dark);
+    }
+    
+    /* Enhanced shooter upsell */
+    #shooter-upsell {
+      background-color: #fff9e5;
+      border: 1px solid #ffe082;
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      margin-top: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    #shooter-options {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .shooter-card {
+      background-color: white;
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid var(--gray);
+    }
+    
+    .shooter-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--secondary);
+    }
+    
+    /* Login toast */
+    #login-toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--success);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 1.1rem;
+      z-index: 10000;
+      display: none;
+      white-space: nowrap;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      animation: fadeInOut 3s ease-in-out;
+      width: auto;
+      max-width: 90%;
+    }
+    
+    /* Responsive design improvements */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        padding: 1rem 0;
+      }
+      
+      .logo {
+        font-size: 1.75rem;
+      }
+      
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      
+      .hero p {
+        font-size: 1.1rem;
+      }
+      
+      .feature-cards {
+        flex-direction: column;
+      }
+      
+      .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .cart-item-image {
+        width: 100%;
+        height: auto;
+        max-height: 120px;
+      }
+      
+      .cart-item-details {
+        width: 100%;
+      }
+      
+      .cart-item-quantity {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+    
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .products {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media (min-width: 1025px) {
+      .products {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.style.display = 'none';
+    document.body.classList.remove('modal-open');
+  }
+  
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.style.display = 'flex';
+      document.body.classList.add('modal-open');
+    }
+  }
+  
+  window.addEventListener('click', function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+      }
+    });
+  });
+</script>
+
+<!-- Login Modal -->
+<div class="modal" id="login-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Login</h2>
+      <button class="close-modal" onclick="closeModal('login-modal')">&times;</button>
+    </div>
+    <div style="margin-bottom: 1.5rem; color: var(--accent); background-color: #FFF9C4; padding: 0.8rem; border-radius: var(--radius-sm); font-size: 0.9rem;">
+      <strong>Demo Login:</strong> demo@example.com / password
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-envelope"></i> Email</label>
+      <input type="email" id="login-email" placeholder="your@email.com" value="demo@example.com">
+    </div>
+    
+    <div class="form-group">
+      <label><i class="fas fa-lock"></i> Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" value="password">
+    </div>
+    
+    <div class="form-group" style="text-align: right; margin-top: -0.5rem;">
+      <a href="#" style="color: var(--accent); font-size: 0.9rem; text-decoration: none;">Forgot password?</a>
+    </div>
+    
+    <div class="form-footer">
+      <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- Signup Modal -->
+<div class="modal" id="signup-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Create an Account</h2>
+      <button class="close-modal" onclick="closeModal('signup-modal')">&times;</button>
+    </div>
+    <div class="form-group">
+      <label for="signup-name"><i class="fas fa-user"></i> Full Name</label>
+      <input type="text" id="signup-name" placeholder="John Doe" required />
+    </div>
+    
+    <div class="form-group">
+      <label for="signup-email"><i class="fas fa-envelope"></i> Email</label>
+      <input type="email" id="signup-email" placeholder="your@email.com" required />
+    </div>
+
+    <div class="form-group">
+      <label for="signup-password"><i class="fas fa-lock"></i> Password</label>
+      <input type="password" id="signup-password" placeholder="Minimum 8 characters" required />
+    </div>
+
+    <div class="form-group">
+      <label for="signup-phone"><i class="fas fa-phone"></i> Phone Number</label>
+      <input type="tel" id="signup-phone" placeholder="(123) 456-7890" required />
+    </div>
+
+    <div class="form-group">
+      <label for="signup-address"><i class="fas fa-map-marker-alt"></i> Delivery Address</label>
+      <input type="text" id="signup-address" placeholder="Start typing your address..." required />
+    </div>
+
+    <div class="form-footer">
+      <button class="btn btn-primary" onclick="handleSignup()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Modal -->
+<div class="modal" id="cart-modal">
+  <div class="modal-content cart-modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title"><i class="fas fa-shopping-cart"></i> Your Cart</h2>
+      <button class="close-modal" onclick="closeModal('cart-modal')">&times;</button>
+    </div>
+    <div class="cart-items" id="cart-items">
+      <!-- Cart items will go here -->
+    </div>
+    <div class="cart-summary">
+      <div class="cart-summary-row"><span>Subtotal:</span><span>$0.00</span></div>
+      <div class="cart-summary-row"><span>Delivery Fee:</span><span>$4.99</span></div>
+      <div class="cart-summary-total"><span>Total:</span><span>$4.99</span></div>
+      
+      <!-- Shooter Upsell Suggestion -->
+      <div id="shooter-upsell" style="display: none;">
+        <p style="margin-bottom: 0.8rem;"><strong><i class="fas fa-exclamation-circle"></i> You're almost there!</strong> Add a shooter to reach the $40 minimum:</p>
+        <div id="shooter-options"></div>
+      </div>
+
+      <div class="form-group" style="margin-top: 1.5rem;">
+        <label for="delivery-address"><i class="fas fa-truck"></i> Delivery Address</label>
+        <input type="text" id="delivery-address" placeholder="Enter delivery address" required />
+        <button class="btn btn-outline" style="margin-top: 0.8rem; width: 100%;" onclick="useCurrentLocation()">
+          <i class="fas fa-map-marker-alt"></i> Use Current Location
+        </button>
+      </div>
+
+      <div id="zoneWarning" style="color: var(--error); font-weight: bold; display: none; margin-top: 0.8rem; padding: 0.8rem; background-color: rgba(234, 67, 53, 0.1); border-radius: var(--radius-sm);"></div>
+      
+      <div class="form-footer" style="margin-top: 1.5rem;">
+        <button class="btn btn-primary" style="width: 100%; padding: 0.8rem;"><i class="fas fa-credit-card"></i> Checkout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div style="position: relative; width: 100%; display: flex; justify-content: center; z-index: 10000;">
+  <!-- Centered login success notification -->
+  <div id="login-toast" style="
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--success);
+    color: white;
+    padding: 1.2rem 2.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.2rem;
+    z-index: 10000;
+    display: none;
+    white-space: nowrap;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    animation: fadeInOut 3s ease-in-out;
+    min-width: 250px;
+    max-width: 90%;
+  ">
+    <i class="fas fa-check-circle"></i> Login successful!
+  </div>
+</div>
+
+<div id="sticky-header-wrapper" style="position: fixed; top: 3.25rem; left: 0; width: 100%; z-index: 1000; transition: top 0.3s ease;">
+  <header style="background-color: var(--primary);">
+    <div class="container header-content">
+      <a href="#" class="logo">Alcohol<span>Direct</span></a>
+      <nav>
+        <ul>
+          <li><a href="#hero" class="active">Home</a></li>
+          <li><a href="#categories">Shop</a></li>
+          <li><a href="#features">About Us</a></li>
+          <li><a href="#footer">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="action-buttons" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <div id="auth-buttons" class="auth-section" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.25rem;">
+          <button class="btn btn-outline" onclick="openModal('login-modal')"><i class="fas fa-sign-in-alt"></i> Login</button>
+          <button class="btn btn-primary" onclick="openModal('signup-modal')"><i class="fas fa-user-plus"></i> Sign Up</button>
+        </div>
+        <!-- Auth Greeting (when logged in) -->
+<!-- Left-Side Fixed Auth Greeting -->
+<!-- Sticky full-width brown bar with greeting on the left -->
+<div style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--primary);
+  z-index: 10000;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+">
+  <div id="auth-loggedin" class="auth-section" style="
+    display: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+  ">
+    <span id="user-greeting" style="font-weight: bold;"></span>
+    <button id="logout-button" class="btn btn-outline" onclick="handleLogout()">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+  </div>
+</div>
+
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Fixed Cart Icon (outside header) -->
+<div id="fixed-cart-icon" style="position: fixed; top: 1rem; right: 1rem; z-index: 1100;">
+  <div class="cart-icon" onclick="openModal('cart-modal')" style="cursor: pointer;">
+    <i class="fas fa-shopping-cart" style="font-size: 1.5rem; color: white;"></i>
+    <span class="cart-count" id="cart-count">0</span>
+  </div>
+</div>
+</div>
+
+  </div>
+</header>
+
+
+<!-- Hero Section -->
+<section id="hero" class="hero">
+  <div class="container">
+    <h1>Sophisticated Spirits, Delivered</h1>
+    <p>Premium liquor delivered to your doorstep in 60 minutes or less. Unbeatable prices, exceptional selection.</p>
+    <div id="map" style="height: 400px; width: 100%; margin-top: 20px; border-radius: 12px;"></div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features">
+  <div class="container">
+    <h2>Why Choose Alcohol Direct?</h2>
+    <p class="subtitle">We're committed to providing the best alcohol delivery experience in College Station, Texas.</p>
+    <div class="feature-cards">
+      <div class="feature-card">
+        <i class="fas fa-shipping-fast"></i>
+        <h3>Fast Delivery</h3>
+        <p>Get your order in 60 minutes or less, right to your doorstep. Our delivery drivers are prompt and professional.</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-tag"></i>
+        <h3>Best Prices</h3>
+        <p>We offer the most competitive prices in the market, guaranteed. No markup, no hidden fees - just great value.</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-wine-bottle"></i>
+        <h3>Premium Selection</h3>
+        <p>Browse through our extensive collection of premium spirits, handpicked for quality and customer satisfaction.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Shop By Category Section -->
+<section id="categories" class="categories">
+  <div class="container">
+    <h2>Shop By Category</h2>
+    <p class="subtitle">Explore our extensive collection of premium spirits, wines, and more.</p>
+    <div class="category-tabs">
+      <div class="category-tab active" data-category="all">All</div>
+      <div class="category-tab" data-category="whiskey">Whiskey</div>
+      <div class="category-tab" data-category="vodka">Vodka</div>
+      <div class="category-tab" data-category="rum">Rum</div>
+      <div class="category-tab" data-category="gin">Gin</div>
+      <div class="category-tab" data-category="tequila">Tequila</div>
+      <div class="category-tab" data-category="brandy">Brandy</div>
+      <div class="category-tab" data-category="shooters">Shooters</div>
+    </div>
+    <div class="products">
+  <!-- Whiskey Products -->
+  <div class="product-card" data-category="whiskey">
+    <div class="product-image">
+      <img src="assets/images/jack-daniels.jpg" alt="Jack Daniel's Tennessee Whiskey">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Jack Daniel's Tennessee Whiskey (1.75L)</h3>
+      <div class="product-price">$49.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="whiskey1" data-name="Jack Daniel's Tennessee Whiskey" data-price="49.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="whiskey">
+    <div class="product-image">
+      <img src="assets/images/fireball.jpg" alt="Fireball Cinnamon Whisky">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Fireball Cinnamon Whisky (1.75L)</h3>
+      <div class="product-price">$28.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="whiskey2" data-name="Fireball Cinnamon Whisky" data-price="28.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="whiskey">
+    <div class="product-image">
+      <img src="assets/images/evan-williams.jpg" alt="Evan Williams Black Bourbon">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Evan Williams Black Bourbon (1.75L)</h3>
+      <div class="product-price">$26.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="whiskey3" data-name="Evan Williams Black Bourbon" data-price="26.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vodka Products -->
+  <div class="product-card" data-category="vodka">
+    <div class="product-image">
+      <img src="assets/images/titos-vodka.jpg" alt="Tito's Handmade Vodka">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Tito's Handmade Vodka (1.75L)</h3>
+      <div class="product-price">$32.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="vodka1" data-name="Tito's Handmade Vodka" data-price="32.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="vodka">
+    <div class="product-image">
+      <img src="assets/images/smirnoff-red.jpg" alt="Smirnoff Red Label Vodka">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Smirnoff Red Label Vodka (1.75L)</h3>
+      <div class="product-price">$27.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="vodka2" data-name="Smirnoff Red Label Vodka" data-price="27.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="vodka">
+    <div class="product-image">
+      <img src="assets/images/new-amsterdam-vodka.jpg" alt="New Amsterdam Vodka">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">New Amsterdam Vodka (1.75L)</h3>
+      <div class="product-price">$22.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="vodka3" data-name="New Amsterdam Vodka" data-price="22.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rum Products -->
+  <div class="product-card" data-category="rum">
+    <div class="product-image">
+      <img src="assets/images/captain-morgan.jpg" alt="Captain Morgan Spiced Rum">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Captain Morgan Spiced Rum (1.75L)</h3>
+      <div class="product-price">$31.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="rum1" data-name="Captain Morgan Spiced Rum" data-price="31.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="rum">
+    <div class="product-image">
+      <img src="assets/images/bacardi-white.jpg" alt="Bacardi Superior White Rum">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Bacardi Superior White Rum (1.75L)</h3>
+      <div class="product-price">$30.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="rum2" data-name="Bacardi Superior White Rum" data-price="30.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="rum">
+    <div class="product-image">
+      <img src="assets/images/malibu.jpg" alt="Malibu Coconut Rum">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Malibu Coconut Rum (1.75L)</h3>
+      <div class="product-price">$35.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="rum3" data-name="Malibu Coconut Rum" data-price="35.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gin Products -->
+  <div class="product-card" data-category="gin">
+    <div class="product-image">
+      <img src="assets/images/tanqueray-gin.jpg" alt="Tanqueray London Dry Gin">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Tanqueray London Dry Gin (750ml)</h3>
+      <div class="product-price">$32.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="gin1" data-name="Tanqueray London Dry Gin" data-price="32.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="gin">
+    <div class="product-image">
+      <img src="assets/images/new-amsterdam-gin.jpg" alt="New Amsterdam Gin">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">New Amsterdam Gin (750ml)</h3>
+      <div class="product-price">$25.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="gin2" data-name="New Amsterdam Gin" data-price="25.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tequila Products -->
+  <div class="product-card" data-category="tequila">
+    <div class="product-image">
+      <img src="assets/images/jose-cuervo.jpg" alt="Jose Cuervo Gold Tequila">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Jose Cuervo Gold Tequila (1.75L)</h3>
+      <div class="product-price">$34.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="tequila1" data-name="Jose Cuervo Gold Tequila" data-price="34.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="tequila">
+    <div class="product-image">
+      <img src="assets/images/1800-silver.jpg" alt="1800 Silver Tequila">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">1800 Silver Tequila (1.75L)</h3>
+      <div class="product-price">$42.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="tequila2" data-name="1800 Silver Tequila" data-price="42.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="tequila">
+    <div class="product-image">
+      <img src="assets/images/espolon-blanco.jpg" alt="Espolon Blanco Tequila">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Espolon Blanco Tequila (750ml)</h3>
+      <div class="product-price">$34.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="tequila3" data-name="Espolon Blanco Tequila" data-price="34.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liqueur Products -->
+  <div class="product-card" data-category="liqueur">
+    <div class="product-image">
+      <img src="assets/images/baileys.jpg" alt="Baileys Irish Cream">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Baileys Irish Cream (750ml)</h3>
+      <div class="product-price">$20.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="liq1" data-name="Baileys Irish Cream" data-price="20.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="liqueur">
+    <div class="product-image">
+      <img src="assets/images/rumchata.jpg" alt="RumChata">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">RumChata (750ml)</h3>
+      <div class="product-price">$21.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="liq2" data-name="RumChata" data-price="21.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cognac Products -->
+  <div class="product-card" data-category="brandy">
+    <div class="product-image">
+      <img src="assets/images/hennessy.jpg" alt="Hennessy VS Cognac">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Hennessy VS Cognac (750ml)</h3>
+      <div class="product-price">$60.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="cognac1" data-name="Hennessy VS Cognac" data-price="60.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="brandy">
+    <div class="product-image">
+      <img src="assets/images/remy-martin.jpg" alt="Rémy Martin VSOP Cognac">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Rémy Martin VSOP Cognac (750ml)</h3>
+      <div class="product-price">$72.00</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="cognac2" data-name="Rémy Martin VSOP Cognac" data-price="72.00">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shooter Products -->
+  <div class="product-card" data-category="shooters">
+    <div class="product-image">
+      <img src="assets/images/fireball-50ml.jpeg" alt="Fireball 50ml">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Fireball 50ml</h3>
+      <div class="product-price">$1.99</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="shooter1" data-name="Fireball 50ml" data-price="1.99">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="shooters">
+    <div class="product-image">
+      <img src="assets/images/titos-50ml.jpg" alt="Tito's 50ml">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Tito's 50ml</h3>
+      <div class="product-price">$2.25</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="shooter2" data-name="Tito's 50ml" data-price="2.25">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="shooters">
+    <div class="product-image">
+      <img src="assets/images/pink-whitney-50ml.jpg" alt="Pink Whitney 50ml">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Pink Whitney 50ml</h3>
+      <div class="product-price">$1.99</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="shooter3" data-name="Pink Whitney 50ml" data-price="1.99">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" data-category="shooters">
+    <div class="product-image">
+      <img src="assets/images/crown-royal-50ml.jpg" alt="Crown Royal 50ml">
+    </div>
+    <div class="product-info">
+      <h3 class="product-title">Crown Royal 50ml</h3>
+      <div class="product-price">$2.49</div>
+      <div class="product-actions">
+        <div class="quantity-control">
+          <button class="qty-decrease">-</button>
+          <input type="number" value="1" min="1" class="qty-input">
+          <button class="qty-increase">+</button>
+        </div>
+        <button class="add-to-cart" data-id="shooter4" data-name="Crown Royal 50ml" data-price="2.49">Add</button>
+      </div>
+    </div>
+  </div>
+</div> <!-- End of .products -->
+
+      <!-- Additional product cards for remaining categories... -->
+      
+    </div>
+  </div>
+</section>
+
+<!-- Trust Indicators Section -->
+<section style="background-color: white; padding: 4rem 0;">
+  <div class="container" style="text-align: center;">
+    <h2 style="margin-bottom: 1rem;">Trusted By Del Rio</h2>
+    <p class="subtitle">We've proudly served thousands of customers with safe, reliable delivery.</p>
+    
+    <div style="display: flex; justify-content: center; gap: 4rem; margin-top: 3rem; flex-wrap: wrap;">
+      <div style="text-align: center;">
+        <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent);">5,000+</div>
+        <div style="font-size: 1.1rem; color: var(--gray-dark);">Happy Customers</div>
+      </div>
+      
+      <div style="text-align: center;">
+        <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent);">15,000+</div>
+        <div style="font-size: 1.1rem; color: var(--gray-dark);">Deliveries</div>
+      </div>
+      
+      <div style="text-align: center;">
+        <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent);">4.9</div>
+        <div style="font-size: 1.1rem; color: var(--gray-dark);">Average Rating</div>
+      </div>
+    </div>
+    
+    <div style="margin-top: 4rem; padding: 2rem; background-color: var(--light); border-radius: var(--radius-md); max-width: 800px; margin-left: auto; margin-right: auto; box-shadow: var(--shadow-md);">
+      <p style="font-style: italic; color: var(--gray-dark); font-size: 1.2rem; margin-bottom: 1.5rem;">"Alcohol Direct has been a game-changer. Their delivery is always on time, and the prices can't be beat. Highly recommend!"</p>
+      <div style="font-weight: 600; color: var(--dark);">Michael Johnson</div>
+      <div style="color: var(--gray-dark); font-size: 0.9rem;">College Station, TX</div>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter and Referral Program -->
+<section style="background-color: var(--primary); color: white; padding: 5rem 0;">
+  <div class="container" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2rem;">
+    <div style="flex: 1; min-width: 300px;">
+      <h2 style="font-size: 2.2rem; margin-bottom: 1.5rem; color: white;">Join Our VIP List</h2>
+      <p style="font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9; line-height: 1.6;">Subscribe to our newsletter for exclusive deals, discounts, and early access to special promotions.</p>
+      
+      <div style="margin-bottom: 2rem;">
+        <div style="display: flex; max-width: 450px;">
+          <input type="email" placeholder="Your email address" style="flex: 1; padding: 0.8rem; border: none; border-radius: var(--radius-sm) 0 0 var(--radius-sm); font-size: 1rem;">
+          <button class="btn btn-primary" style="border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 0;">Subscribe</button>
+        </div>
+      </div>
+      
+      <div style="background-color: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: var(--radius-md); max-width: 450px;">
+        <h3 style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--secondary);">Refer a Friend</h3>
+        <p style="margin-bottom: 1rem; font-size: 0.95rem;">Refer a friend and both of you get $10 off your next order!</p>
+        <button class="btn btn-primary" style="width: 100%;">Get Referral Link</button>
+      </div>
+    </div>
+    
+    <div style="flex: 1; min-width: 300px; text-align: center;">
+      <div style="background-color: rgba(255,255,255,0.1); padding: 2rem; border-radius: var(--radius-md); max-width: 400px; margin: 0 auto;">
+        <h3 style="font-size: 1.4rem; margin-bottom: 1rem; color: var(--secondary);">College Station's Favorite Alcohol Delivery</h3>
+        <p style="margin-bottom: 1.5rem; font-size: 1rem; line-height: 1.6;">Serving Texas A&M University and the surrounding area with fast, reliable delivery.</p>
+        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">Hours of Operation:</div>
+        <div style="margin-bottom: 0.25rem;">Monday - Thursday: 12pm - 11pm</div>
+        <div style="margin-bottom: 0.25rem;">Friday - Saturday: 12pm - 12am</div>
+        <div>Sunday: 12pm - 10pm</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer id="footer">
+  <div class="container footer-content">
+    <div class="footer-section">
+      <h3>Alcohol Direct</h3>
+      <ul>
+        <li><a href="#"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
+        <li><a href="#"><i class="fas fa-file-contract"></i> Terms of Use</a></li>
+        <li><a href="#"><i class="fas fa-truck"></i> Delivery Info</a></li>
+        <li><a href="#"><i class="fas fa-question-circle"></i> FAQ</a></li>
+      </ul>
+    </div>
+    
+    <div class="footer-section">
+      <h3>Contact Us</h3>
+      <ul>
+        <li><a href="mailto:support@alcoholdirect.com"><i class="fas fa-envelope"></i> support@alcoholdirect.com</a></li>
+        <li><a href="tel:1234567890"><i class="fas fa-phone"></i> (123) 456-7890</a></li>
+        <li><a href="#"><i class="fas fa-map-marker-alt"></i> College Station, TX 77840</a></li>
+      </ul>
+    </div>
+    
+    <div class="footer-section">
+      <h3>Follow Us</h3>
+      <div class="social-icons">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-tiktok"></i></a>
+      </div>
+      <div style="margin-top: 1.5rem;">
+        <img src="/api/placeholder/200/50" alt="Payment Methods" style="max-width: 100%;">
+      </div>
+    </div>
+    
+    <div class="footer-section">
+      <h3>Newsletter</h3>
+      <p style="color: #bbb; margin-bottom: 1rem;">Subscribe for special offers and updates</p>
+      <div style="display: flex;">
+        <input type="email" placeholder="Your email" style="flex: 1; padding: 0.6rem; border: none; border-radius: var(--radius-sm) 0 0 var(--radius-sm); font-size: 0.9rem;">
+        <button class="btn btn-primary" style="border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 0.6rem 1rem;">Subscribe</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer-bottom">
+    <div style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">
+      <i class="fas fa-shield-alt"></i> All transactions are secure and encrypted. You must be 21+ to order.
+    </div>
+    <div style="margin-bottom: 0.5rem;">
+      <img src="/api/placeholder/250/40" alt="Security Badges" style="height: 30px;">
+    </div>
+    &copy; 2025 Alcohol Direct. All rights reserved.
+  </div>
+</footer>
+
+<script>
+  const shooterProducts = [
+    { id: "shooter1", name: "Fireball 50ml", price: 1.99, image: "fireball-50ml.jpeg" },
+    { id: "shooter2", name: "Titos 50ml", price: 2.25, image: "titos-50ml.jpg" },
+    { id: "shooter3", name: "Pink Whitney 50ml", price: 1.99, image: "pink-whitney-50ml.jpg" },
+    { id: "shooter4", name: "Crown Royal 50ml", price: 2.49, image: "crown-royal-50ml.jpg" }
+  ];
+
+  function renderShooterUpsell(cartTotal) {
+    const upsellBox = document.getElementById("shooter-upsell");
+    const options = document.getElementById("shooter-options");
+
+         if (cartTotal < 40) {
+      upsellBox.style.display = "block";
+      options.innerHTML = shooterProducts.map(p => `
+        <div class="shooter-card" onclick="addShooter('${p.id}', '${p.name}', ${p.price}, '${p.image}')" style="flex: 1 1 120px; max-width: 140px; text-align: center; padding: 1rem; border-radius: 8px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+          <img src="assets/images/${p.image}" alt="${p.name}" style="width: 60px; height: 60px; object-fit: contain; border-radius: 6px; margin-bottom: 0.5rem;" />
+          <div style="font-weight: bold; font-size: 0.9rem;">${p.name}</div>
+          <div style="color: var(--accent); font-size: 0.85rem;">${p.price.toFixed(2)}</div>
+        </div>
+      `).join("");
+    } else {
+      upsellBox.style.display = "none";
+    }
+  }
+
+  function addShooter(id, name, price, image) {
+    const existing = cart.find(item => item.id === id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({ id, name, price, quantity: 1, image: `assets/images/${image}` });
+    }
+    updateCartCount();
+    
+    // Show a quick toast notification
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `<i class="fas fa-check-circle"></i> Added ${name} to cart`;
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: var(--success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md);
+      z-index: 10000;
+      animation: fadeInOut 3s ease-in-out;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  function updateCartCount() {
+    const count = cart.reduce((total, item) => total + item.quantity, 0);
+    document.getElementById('cart-count').innerText = count;
+
+    const cartItemsContainer = document.getElementById('cart-items');
+    cartItemsContainer.innerHTML = '';
+
+    let subtotal = 0;
+    const deliveryFee = 4.99;
+
+    cart.forEach(item => {
+      const itemEl = document.createElement('div');
+      itemEl.className = 'cart-item';
+      itemEl.innerHTML = `
+        <div class="cart-item-image">
+          <img src="${item.image}" alt="${item.name}">
+        </div>
+        <div class="cart-item-details">
+          <div class="cart-item-title">${item.name}</div>
+          <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)}</div>
+        </div>
+        <div class="cart-item-quantity">
+          <button class="qty-decrease" data-id="${item.id}">−</button>
+          <input type="number" class="qty-input" value="${item.quantity}" min="1" data-id="${item.id}" />
+          <button class="qty-increase" data-id="${item.id}">+</button>
+        </div>
+        <button class="cart-item-remove" data-id="${item.id}"><i class="fas fa-trash-alt"></i> Remove</button>
+      `;
+      cartItemsContainer.appendChild(itemEl);
+      subtotal += item.price * item.quantity;
+    });
+
+    // If cart is empty, show a message
+    if (cart.length === 0) {
+      cartItemsContainer.innerHTML = `
+        <div style="text-align: center; padding: 2rem 1rem;">
+          <div style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <h3 style="margin-bottom: 0.5rem; color: var(--dark);">Your cart is empty</h3>
+          <p style="color: var(--gray-dark);">Add some products to get started!</p>
+        </div>
+      `;
+    }
+
+    const total = subtotal + deliveryFee;
+
+    // Update the summary section
+    document.querySelector('.cart-summary-row:first-child span:last-child').textContent = `${subtotal.toFixed(2)}`;
+    document.querySelector('.cart-summary-total span:last-child').textContent = `${total.toFixed(2)}`;
+
+    // Add event listeners for remove buttons
+    document.querySelectorAll('.cart-item-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        cart = cart.filter(item => item.id !== id);
+        updateCartCount();
+      });
+    });
+
+    // Add event listeners for quantity inputs
+    document.querySelectorAll('.cart-item-quantity input').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const id = input.dataset.id;
+        let newQty = parseInt(input.value);
+        if (isNaN(newQty) || newQty < 1) newQty = 1;
+        input.value = newQty;
+
+        const item = cart.find(i => i.id === id);
+        if (item) {
+          item.quantity = newQty;
+          localStorage.setItem("cartData", JSON.stringify(cart)); // persist immediately
+          updateCartCount(); // refresh display
+        }
+      });
+    });
+
+    renderShooterUpsell(subtotal);
+    attachCartQuantityEvents();
+    localStorage.setItem("cartData", JSON.stringify(cart));
+    checkMinimumOrder();
+  }
+
+  function attachCartQuantityEvents() {
+    document.querySelectorAll('.cart-item-quantity').forEach(container => {
+      const input = container.querySelector('input');
+      const plusBtn = container.querySelector('.qty-increase');
+      const minusBtn = container.querySelector('.qty-decrease');
+
+      if (plusBtn) {
+        plusBtn.addEventListener('click', () => {
+          input.value = parseInt(input.value) + 1;
+          input.dispatchEvent(new Event('change'));
+        });
+      }
+
+      if (minusBtn) {
+        minusBtn.addEventListener('click', () => {
+          if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+            input.dispatchEvent(new Event('change'));
+          }
+        });
+      }
+    });
+  }
+
+  let cart = [];
+  try {
+    const storedCart = localStorage.getItem("cartData");
+    cart = storedCart ? JSON.parse(storedCart) : [];
+  } catch (err) {
+    console.warn("⚠️ Error parsing stored cart:", err);
+    localStorage.removeItem("cartData"); // wipe corrupted data
+    cart = [];
+  }
+
+  // DOMContentLoaded block
+  window.addEventListener("DOMContentLoaded", () => {
+    // Handle Add to Cart
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+      button.addEventListener('click', () => {
+        const id = button.dataset.id;
+        const name = button.dataset.name;
+        const price = parseFloat(button.dataset.price);
+        const quantityInput = button.parentElement.querySelector('.qty-input');
+        const quantity = parseInt(quantityInput.value);
+
+        const existingItem = cart.find(item => item.id === id);
+        if (existingItem) {
+          existingItem.quantity += quantity;
+        } else {
+          const image = button.closest('.product-card').querySelector('img').getAttribute('src');
+          cart.push({ id, name, price, quantity, image });
+        }
+
+        updateCartCount();
+        
+        // Show a toast notification
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.innerHTML = `<i class="fas fa-check-circle"></i> Added to cart: ${name}`;
+        toast.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background-color: var(--success);
+          color: white;
+          padding: 12px 20px;
+          border-radius: var(--radius-sm);
+          box-shadow: var(--shadow-md);
+          z-index: 10000;
+          animation: fadeInOut 3s ease-in-out;
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      });
+    });
+
+    // Handle quantity buttons for product cards
+    document.querySelectorAll('.qty-increase').forEach(button => {
+      button.addEventListener('click', () => {
+        const input = button.closest('.quantity-control').querySelector('.qty-input');
+        input.value = parseInt(input.value) + 1;
+      });
+    });
+
+    document.querySelectorAll('.qty-decrease').forEach(button => {
+      button.addEventListener('click', () => {
+        const input = button.closest('.quantity-control').querySelector('.qty-input');
+        const newVal = Math.max(1, parseInt(input.value) - 1);
+        input.value = newVal;
+      });
+    });
+
+    function clearCart() {
+      cart = [];
+      localStorage.removeItem("cartData");
+      updateCartCount();
+    }
+
+    function handleCheckout() {
+      if (cart.length === 0) {
+        alert("🛒 Your cart is empty!");
+        return;
+      }
+
+      const addressInput = document.getElementById("delivery-address");
+      if (!addressInput || !addressInput.value.trim()) {
+        alert("⚠️ Please enter a delivery address.");
+        return;
+      }
+
+      // Check if we're in the delivery zone
+      const warningDiv = document.getElementById("zoneWarning");
+      if (warningDiv && warningDiv.style.display !== "none") {
+        alert("⚠️ Sorry, we can't deliver to that address. Please choose a different address.");
+        return;
+      }
+
+      alert("✅ Order placed successfully! Your items will be delivered within 60 minutes.");
+      clearCart();
+      closeModal('cart-modal');
+    }
+
+    // Add event listener to checkout button
+    const checkoutBtn = document.querySelector("#cart-modal .btn.btn-primary");
+    if (checkoutBtn) {
+      checkoutBtn.addEventListener('click', handleCheckout);
+    }
+
+    // Handle category tabs
+    document.querySelectorAll(".category-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        // Remove 'active' from all tabs
+        document.querySelectorAll(".category-tab").forEach(t => t.classList.remove("active"));
+        // Add 'active' to clicked tab
+        tab.classList.add("active");
+
+        const category = tab.getAttribute("data-category");
+        const products = document.querySelectorAll(".product-card");
+
+        products.forEach(card => {
+          if (category === "all" || card.getAttribute("data-category") === category) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      });
+    });
+
+    // Age verification
+    window.verifyAge = function() {
+      const date = new Date();
+      const yearsAgo21 = new Date(date.getFullYear() - 21, date.getMonth(), date.getDate());
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.display = 'flex';
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+          <div class="modal-header">
+            <h2 class="modal-title"><i class="fas fa-id-card"></i> Age Verification</h2>
+            <button class="close-modal" onclick="this.parentNode.parentNode.parentNode.remove()">&times;</button>
+          </div>
+          <p style="margin-bottom: 1.5rem;">Please enter your date of birth to verify you are 21 or older.</p>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Month</label>
+              <select id="birth-month" style="padding: 0.8rem;">
+                ${Array.from({length: 12}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Day</label>
+              <select id="birth-day" style="padding: 0.8rem;">
+                ${Array.from({length: 31}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Year</label>
+              <select id="birth-year" style="padding: 0.8rem;">
+                ${Array.from({length: 100}, (_, i) => `<option value="${date.getFullYear()-i}">${date.getFullYear()-i}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-primary" style="width: 100%;" onclick="checkAge()">Verify Age</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      document.body.classList.add('modal-open');
+      
+      window.checkAge = function() {
+        const month = parseInt(document.getElementById('birth-month').value) - 1;
+        const day = parseInt(document.getElementById('birth-day').value);
+        const year = parseInt(document.getElementById('birth-year').value);
+        
+        const birthDate = new Date(year, month, day);
+        
+        if (birthDate <= yearsAgo21) {
+          document.querySelector('.age-verification').style.display = 'none';
+          modal.remove();
+          document.body.classList.remove('modal-open');
+          
+          // Show success toast
+          const toast = document.createElement('div');
+          toast.className = 'toast-notification';
+          toast.innerHTML = `<i class="fas fa-check-circle"></i> Age verification successful!`;
+          toast.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-md);
+            z-index: 10000;
+            animation: fadeInOut 3s ease-in-out;
+          `;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+        } else {
+          alert("Sorry, you must be 21 or older to access this website.");
+        }
+      };
+    };
+
+    updateCartCount();
+  });
+
+  async function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    const locationBtn = document.querySelector('#cart-modal .btn.btn-outline');
+    if (locationBtn) {
+      locationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+      locationBtn.disabled = true;
+    }
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const { latitude, longitude } = position.coords;
+      try {
+        const res = await fetch(`https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=64e2bfff967343f6a4efe674ef43a213`);
+        const data = await res.json();
+        if (data.features.length) {
+          const address = data.features[0].properties.formatted;
+          document.getElementById("delivery-address").value = address;
+          
+          // Trigger address check
+          document.getElementById("delivery-address").dispatchEvent(new Event('blur'));
+        } else {
+          alert("Unable to determine address.");
+        }
+      } catch (err) {
+        console.error("Geoapify reverse geocode error:", err);
+        alert("Error retrieving location.");
+      } finally {
+        if (locationBtn) {
+          locationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location';
+          locationBtn.disabled = false;
+        }
+      }
+    }, (error) => {
+      console.error("Geolocation error:", error);
+      alert("Unable to retrieve your location. Please grant location permissions.");
+      if (locationBtn) {
+        locationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location';
+        locationBtn.disabled = false;
+      }
+    });
+  }
+
+  async function handleLogin() {
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value.trim();
+
+    if (!email || !password) {
+      alert("Please enter email and password.");
+      return;
+    }
+    
+    // For demo purposes - always show successful login
+    if (email === "demo@example.com" && password === "password") {
+      // Skip Firebase auth and show success directly
+      localStorage.setItem("userName", "Demo User");
+      
+      document.getElementById("auth-buttons").style.display = "none";
+      document.getElementById("auth-loggedin").style.display = "flex";
+      const greetingEl = document.getElementById("user-greeting");
+      greetingEl.textContent = `Welcome, Demo User!`;
+      greetingEl.style.display = "inline-block";
+      document.getElementById("fixed-greeting-name").textContent = `Welcome, ${userData.name.split(" ")[0]}!`;
+document.getElementById("fixed-auth-greeting").style.display = "flex";
+      document.getElementById("logout-button").style.display = "inline-block";
+      document.getElementById("fixed-auth-greeting").style.display = "flex";
+
+      
+      const toast = document.getElementById("login-toast");
+      toast.style.display = "block";
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 3000);
+      
+      closeModal("login-modal");
+      return;
+    }
+
+    // Show loading state
+    const loginBtn = document.querySelector('#login-modal .btn.btn-primary');
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+    loginBtn.disabled = true;
+
+    try {
+      const { auth, db, signInWithEmailAndPassword, getDoc, doc } = window.firebaseStuff;
+
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const userData = userDoc.data();
+
+      console.log("✅ Firestore user data:", userData);
+
+      if (userData?.name) {
+        localStorage.setItem("userName", userData.name);
+        console.log("✅ Saved name:", userData.name);
+        const greetingEl = document.getElementById("user-greeting");
+        greetingEl.textContent = `Welcome, ${userData.name.split(" ")[0]}!`;
+        greetingEl.style.display = "inline-block";
+      }
+
+      if (userData?.address) {
+        localStorage.setItem("userAddress", userData.address);
+      }
+
+      document.getElementById("auth-buttons").style.display = "none";
+      document.getElementById("auth-loggedin").style.display = "flex";
+      document.getElementById("logout-button").style.display = "inline-block";
+
+      const toast = document.getElementById("login-toast");
+      toast.style.display = "block";
+      toast.style.width = "auto";
+      toast.style.maxWidth = "90%";
+      toast.style.left = "50%";
+      toast.style.transform = "translateX(-50%)";
+      toast.style.textAlign = "center";
+      toast.style.margin = "0 auto";
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 3000);
+
+      closeModal("login-modal");
+    } catch (error) {
+      console.error("Firebase login error:", error);
+      alert("❌ " + error.message);
+    } finally {
+      // Reset button state
+      loginBtn.innerHTML = 'Login';
+      loginBtn.disabled = false;
+    }
+  }
+
+  async function handleSignup() {
+    const name = document.getElementById("signup-name").value.trim();
+    const email = document.getElementById("signup-email").value.trim();
+    const password = document.getElementById("signup-password").value.trim();
+    const phone = document.getElementById("signup-phone").value.trim();
+    const address = document.getElementById("signup-address").value.trim();
+
+    if (!name || !email || !password || !phone || !address) {
+      alert("Please fill out all fields.");
+      return;
+    }
+
+    // Show loading state
+    const signupBtn = document.querySelector('#signup-modal .btn.btn-primary');
+    signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+    signupBtn.disabled = true;
+
+    try {
+      const { auth, db, createUserWithEmailAndPassword, setDoc, doc } = window.firebaseStuff;
+
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        name: name,
+        email: email,
+        phone: phone,
+        address: address,
+        createdAt: new Date().toISOString()
+      });
+
+      localStorage.setItem("userName", name);
+      localStorage.setItem("userAddress", address);
+
+      document.getElementById("auth-buttons").style.display = "none";
+      document.getElementById("auth-loggedin").style.display = "flex";
+      document.getElementById("user-greeting").textContent = `Welcome, ${name.split(" ")[0]}!`;
+      document.getElementById("logout-button").style.display = "inline-block";
+
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification';
+      toast.innerHTML = `<i class="fas fa-check-circle"></i> Account created successfully!`;
+      toast.style.cssText = `
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--success);
+        color: white;
+        padding: 12px 20px;
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-md);
+        z-index: 10000;
+        animation: fadeInOut 3s ease-in-out;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+
+      closeModal("signup-modal");
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert("❌ " + error.message);
+    } finally {
+      // Reset button state
+      signupBtn.innerHTML = 'Create Account';
+      signupBtn.disabled = false;
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userAddress");
+
+    const greetingEl = document.getElementById("user-greeting");
+    const authButtons = document.getElementById("auth-buttons");
+    const authLoggedIn = document.getElementById("auth-loggedin");
+    const logoutButton = document.getElementById("logout-button");
+
+    if (greetingEl) greetingEl.textContent = "";
+    if (authLoggedIn) authLoggedIn.style.display = "none";
+    document.getElementById("fixed-auth-greeting").style.display = "none";
+    if (logoutButton) logoutButton.style.display = "none";
+    if (authButtons) {
+      authButtons.style.display = "flex";
+      // Ensure its buttons are visible
+      authButtons.querySelectorAll("button").forEach(btn => {
+        btn.style.display = "inline-block";
+      });
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `<i class="fas fa-check-circle"></i> Successfully logged out`;
+    toast.style.cssText = `
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md);
+      z-index: 10000;
+      animation: fadeInOut 3s ease-in-out;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // Function to check if the cart total meets the minimum order amount
+  function checkMinimumOrder() {
+    const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const checkoutBtn = document.querySelector("#cart-modal .btn.btn-primary");
+    
+    if (subtotal < 40) {
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.backgroundColor = '#aaa';
+      checkoutBtn.style.cursor = 'not-allowed';
+      checkoutBtn.innerHTML = `<i class="fas fa-lock"></i> Checkout (${(40 - subtotal).toFixed(2)} more to minimum)`;
+    } else {
+      checkoutBtn.disabled = false;
+      checkoutBtn.style.backgroundColor = 'var(--secondary)';
+      checkoutBtn.style.cursor = 'pointer';
+      checkoutBtn.innerHTML = `<i class="fas fa-credit-card"></i> Checkout`;
+    }
+  }
+  
+  // On page load, check if user is logged in
+  window.addEventListener("load", () => {
+    const name = localStorage.getItem("userName");
+    const address = localStorage.getItem("userAddress");
+
+    const greetingEl = document.getElementById("user-greeting");
+    const authButtons = document.getElementById("auth-buttons");
+    const authLoggedIn = document.getElementById("auth-loggedin");
+    const logoutButton = document.getElementById("logout-button");
+    const deliveryInput = document.getElementById("delivery-address");
+
+    if (name) {
+      if (greetingEl) {
+        greetingEl.textContent = `Welcome, ${name.split(" ")[0]}!`;
+        greetingEl.style.cssText = "display: inline-block; color: white; font-weight: bold;";
+      }
+      const fixedGreeting = document.getElementById("fixed-auth-greeting");
+const fixedGreetingName = document.getElementById("fixed-greeting-name");
+if (fixedGreeting && fixedGreetingName) {
+  fixedGreetingName.textContent = `Welcome, ${name.split(" ")[0]}!`;
+  fixedGreeting.style.display = "flex";
+}
+
+
+      if (authButtons) {
+        authButtons.style.display = "none";
+        authButtons.querySelectorAll("button").forEach(btn => {
+          btn.style.display = "none";
+        });
+      }
+
+      if (authLoggedIn) {
+        authLoggedIn.style.display = "flex";
+      }
+      document.getElementById("fixed-auth-greeting").style.display = "flex";
+
+
+      if (logoutButton) logoutButton.style.display = "inline-block";
+    } else {
+      if (authButtons) {
+        authButtons.style.display = "flex";
+        authButtons.querySelectorAll("button").forEach(btn => {
+          btn.style.display = "inline-block";
+        });
+      }
+
+      if (authLoggedIn) {
+        authLoggedIn.style.display = "none";
+      }
+
+      if (logoutButton) logoutButton.style.display = "none";
+    }
+
+    if (address && deliveryInput) {
+      deliveryInput.value = address;
+    }
+  });
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDsa-NLEnx4Y04K9C_rCPuhpnIsj7sJB0k",
+    authDomain: "alcohol-direct-c4b06.firebaseapp.com",
+    projectId: "alcohol-direct-c4b06",
+    storageBucket: "alcohol-direct-c4b06.appspot.com",
+    messagingSenderId: "219671150829",
+    appId: "1:219671150829:web:2ae00c297fbee6e2074ce4",
+    measurementId: "G-D6PYS64RWM"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Store globally so you can use it later in handleSignup()
+  window.firebaseStuff = {
+    auth,
+    db,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    setDoc,
+    getDoc,
+    doc
+  };
+</script>
+
+<!-- Geolocation and Delivery Zone Script -->
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const map = L.map('map', {
+      zoomSnap: 0.5,
+      zoomDelta: 0.5,
+      scrollWheelZoom: true,
+      zoomAnimation: true,
+      zoomAnimationThreshold: 4,
+      wheelPxPerZoomLevel: 40,
+      inertia: true,
+      inertiaDeceleration: 3000,
+      easeLinearity: 0.25
+    }).setView([30.6280, -96.3344], 13); // College Station, TX coordinates
+
+    L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}@2x.png?key=2XRiOWbTcOv8QGSvM2Rk', {
+      attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> & OpenStreetMap contributors',
+      tileSize: 512,
+      zoomOffset: -1
+    }).addTo(map);
+
+    // Create a sample delivery zone if not defined
+    if (!window.deliveryZone) {
+      // Create a simple circular polygon around Del Rio
+      const center = [29.3631, -100.8960]; // Del Rio coordinates
+      const radius = 0.05; // in degrees
+      const points = 36;
+      const polygon = {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[]]
+        }
+      };
+      
+      for (let i = 0; i < points; i++) {
+        const angle = (i / points) * (Math.PI * 2);
+        const lat = center[0] + (Math.sin(angle) * radius);
+        const lng = center[1] + (Math.cos(angle) * radius);
+        polygon.geometry.coordinates[0].push([lng, lat]);
+      }
+      
+      // Close the polygon
+      polygon.geometry.coordinates[0].push(polygon.geometry.coordinates[0][0]);
+      
+      window.deliveryZone = polygon;
+    }
+
+    const zoneLayer = L.geoJSON(window.deliveryZone, {
+  style: {
+    color: '#1e88e5',         // Blue outline
+    weight: 3,
+    fillColor: '#1e88e5',     // Blue fill
+    fillOpacity: 0.2
+  }
+}).addTo(map);
+
+    
+    // Add a marker for store location
+    L.marker([30.6280, -96.3344]).addTo(map)
+      .bindPopup('<strong>Alcohol Direct</strong><br>College Station, TX')
+      .openPopup();
+
+    map.fitBounds(zoneLayer.getBounds());
+
+    // Initialize address autocompletion
+    const signupEl = document.getElementById("signup-address");
+    if (signupEl) {
+      new Geoapify.GeocoderAutocomplete(signupEl, "64e2bfff967343f6a4efe674ef43a213", {
+        placeholder: "Start typing your address...",
+        type: "address",
+        skipIcons: true
+      });
+    }
+
+    const deliveryInput = document.getElementById("delivery-address");
+    const warningDiv = document.getElementById("zoneWarning");
+    const checkoutBtn = document.querySelector("#cart-modal .btn.btn-primary");
+
+    if (deliveryInput) {
+      const autocomplete = new Geoapify.GeocoderAutocomplete(deliveryInput, "64e2bfff967343f6a4efe674ef43a213", {
+        placeholder: "Enter delivery address...",
+        type: "address",
+        skipIcons: true
+      });
+      
+      autocomplete.on('select', (location) => {
+        if (!location || !location.properties) return;
+        
+        const { lat, lon } = location.properties;
+        const point = turf.point([lon, lat]);
+        const zone = window.deliveryZone;
+
+        const inside = turf.booleanPointInPolygon(point, zone);
+        if (inside) {
+          warningDiv.style.display = "none";
+          checkoutBtn.disabled = false;
+        } else {
+          warningDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Sorry, this address is outside our delivery zone.';
+          warningDiv.style.display = "block";
+          checkoutBtn.disabled = true;
+        }
+      });
+
+      deliveryInput.addEventListener("blur", async () => {
+        const address = deliveryInput.value.trim();
+        if (!address) return;
+
+        try {
+          const res = await fetch(`https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(address)}&apiKey=64e2bfff967343f6a4efe674ef43a213`);
+          const data = await res.json();
+
+          if (!data.features.length) {
+            warningDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Address not found.';
+            warningDiv.style.display = "block";
+            checkoutBtn.disabled = true;
+            return;
+          }
+
+          const { lat, lon } = data.features[0].properties;
+          const point = turf.point([lon, lat]);
+          const zone = window.deliveryZone;
+
+          const inside = turf.booleanPointInPolygon(point, zone);
+          if (inside) {
+            warningDiv.style.display = "none";
+            checkoutBtn.disabled = false;
+          } else {
+            warningDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Sorry, this address is outside our delivery zone.';
+            warningDiv.style.display = "block";
+            checkoutBtn.disabled = true;
+          }
+        } catch (err) {
+          console.error("Geoapify error:", err);
+          warningDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error checking address.';
+          warningDiv.style.display = "block";
+          checkoutBtn.disabled = true;
+        }
+      });
+    }
+  });
+</script>
+<script>
+  const header = document.querySelector('header');
+  const hero = document.getElementById('hero');
+
+  function toggleHeaderOnScroll() {
+    const heroBottom = hero.getBoundingClientRect().bottom;
+
+    if (heroBottom <= 0) {
+      header.style.top = '-100px'; // hide
+    } else {
+      header.style.top = '0'; // show
+    }
+  }
+
+  window.addEventListener('scroll', toggleHeaderOnScroll);
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    let lastScrollY = window.scrollY;
+    const headerWrapper = document.getElementById('sticky-header-wrapper');
+
+    if (!headerWrapper) return;
+
+    window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY) {
+        // Scrolling down → hide header
+        headerWrapper.style.top = '-100px';
+      } else {
+        // Scrolling up → show header
+        headerWrapper.style.top = '3.25rem'; // or 0 if you want it flush
+      }
+
+      lastScrollY = currentScrollY;
+    });
+  });
+</script>
+
+
+</body>
+</html>

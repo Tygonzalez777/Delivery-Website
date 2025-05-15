@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Geoapify Autocomplete Test</title>
+  <link rel="stylesheet" href="https://unpkg.com/@geoapify/geocoder-autocomplete/styles/minimal.css" />
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    #autocomplete { width: 100%; max-width: 400px; }
+  </style>
+</head>
+<body>
+  <h2>Test Geoapify Autocomplete</h2>
+  <input type="text" id="autocomplete" placeholder="Start typing an address..." />
+
+  <script src="https://unpkg.com/@geoapify/geocoder-autocomplete@1.2.0/dist/geocoder-autocomplete.min.js?apiKey=42ba86c23d8b4c39b2a0ecba3bb55441" crossorigin="anonymous"></script>
+  <script>
+    if (typeof Geoapify !== "undefined") {
+      console.log("✅ Geoapify loaded");
+      const input = document.getElementById("autocomplete");
+      const autocomplete = new Geoapify.GeocoderAutocomplete(input, "42ba86c23d8b4c39b2a0ecba3bb55441", {
+        placeholder: "Enter address",
+        skipIcons: true
+      });
+
+      autocomplete.on("select", (value) => {
+        console.log("Selected:", value.properties.formatted);
+      });
+    } else {
+      console.error("❌ Geoapify not loaded");
+    }
+  </script>
+</body>
+</html>

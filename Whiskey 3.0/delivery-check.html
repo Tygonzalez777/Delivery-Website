@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delivery Zone Checker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 300px;
+      margin: 1rem 0;
+      border: 2px solid #ccc;
+    }
+    .message {
+      font-weight: bold;
+      margin-top: 1rem;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>Check if you're in our delivery zone</h2>
+  <form id="zoneForm">
+    <input type="text" id="address" placeholder="Enter your address" required />
+    <button type="submit">Check</button>
+  </form>
+  <div id="map"></div>
+  <div class="message" id="zoneMessage"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script>
+    const polygonCoords = [
+      [30.59358, -96.331309],
+      [30.593582, -96.331348],
+      [30.593644, -96.332208],
+      [30.593647, -96.332309],
+      [30.593621, -96.332387],
+      [30.593543, -96.332375],
+      // ... truncate here or replace with full polygon from your JSON
+      [30.59358, -96.331309]
+    ];
+
+    const polygon = L.polygon(polygonCoords, { color: "green" });
+
+    const map = L.map("map").setView([30.566543, -96.301309], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+    polygon.addTo(map);
+
+    const zoneMessage = document.getElementById("zoneMessage");
+
+    document.getElementById("zoneForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const address = document.getElementById("address").value;
+      const geoRes = await fetch(`https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(address)}&apiKey=YOUR_API_KEY`);
+      const geoData = await geoRes.json();
+      if (!geoData.features.length) {
+        zoneMessage.textContent = "Address not found.";
+        return;
+      }
+
+      const { lat, lon } = geoData.features[0].properties;
+      const point = L.latLng(lat, lon);
+      const inside = polygon.getBounds().contains(point);
+
+      L.marker(point).addTo(map).bindPopup("You are here").openPopup();
+      map.setView(point, 14);
+
+      if (inside) {
+        zoneMessage.textContent = "✅ You're inside the delivery zone!";
+        zoneMessage.style.color = "green";
+      } else {
+        zoneMessage.textContent = "❌ You're currently outside our delivery zone. We’ll be expanding soon!";
+        zoneMessage.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>

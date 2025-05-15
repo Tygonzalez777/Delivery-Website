@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alcohol Direct - Fast & Affordable Alcohol Delivery</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/@geoapify/geocoder-autocomplete/styles/minimal.css" />
+
+  <!-- JS Libraries (order matters!) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@geoapify/geocoder-autocomplete@1.2.0/dist/geocoder-autocomplete.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+  <!-- Your zone.js or custom scripts -->
+  <script src="zone.js" defer></script>
+
+  <!-- Your custom styles -->
+  <style>
+    :root {
+      --primary: #2e1f12;
+      --secondary: #d6a55c;
+      --accent: #a65c34;
+      --light: #f5f1e8;
+      --dark: #1c120a;
+      --success: #4caf50;
+      --error: #f44336;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--light);
+      color: var(--dark);
+    }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  text-align: center;
+}
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo span {
+            color: var(--secondary);
+        }
+        
+        nav ul {
+  display: flex;
+  list-style: none;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  white-space: nowrap;
+}
+        
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        nav ul li a:hover {
+            color: var(--secondary);
+        }
+        
+        .action-buttons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #ff8f00;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            margin-right: 0.5rem;
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .cart-icon {
+            margin-left: 1rem;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/api/placeholder/1200/600');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .search-bar {
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            font-size: 1rem;
+        }
+        
+        .search-bar button {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .search-bar button:hover {
+            background-color: #ff8f00;
+        }
+        
+        .features {
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .features h2 {
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        
+        .feature-cards {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .feature-card {
+            flex: 1;
+            min-width: 250px;
+            padding: 2rem;
+            margin: 1rem;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card svg {
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .categories {
+            padding: 4rem 0;
+            background-color: #f9f9f9;
+        }
+        
+        .categories h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .category-tab {
+            padding: 0.8rem 1.5rem;
+            margin: 0.5rem;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .category-tab.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .category-tab:hover:not(.active) {
+            background-color: #f1f1f1;
+        }
+        
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .product-image {
+    height: 200px;
+    background-color: white; /* ✅ Clean white background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+        
+        .product-image img {
+    height: 180px;
+    object-fit: contain;
+    background-color: white;
+    padding: 10px;
+}
+
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        .product-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-price {
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .product-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .quantity-control button {
+            width: 30px;
+            height: 30px;
+            background-color: #f1f1f1;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .quantity-control input {
+            width: 40px;
+            height: 30px;
+            text-align: center;
+            border: none;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+        }
+        
+        .add-to-cart {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .add-to-cart:hover {
+            background-color: #ff8f00;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 4rem 0 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-section ul li a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-section ul li a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid #444;
+            margin-top: 2rem;
+        }
+        
+        .social-icons {
+            display: flex;
+            margin-top: 1rem;
+        }
+        
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+            border-radius: 50%;
+            margin-right: 1rem;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .social-icons a:hover {
+            background-color: var(--secondary);
+        }
+        
+        /* Modal styles */
+        .modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+body.modal-open {
+  overflow: hidden;
+  height: 100vh;
+}
+
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .cart-modal-content {
+    width: 700px;
+    max-width: 90%;
+    background-color: var(--light); /* matches site background */
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+        
+        .cart-items {
+            margin-bottom: 2rem;
+        }
+        
+        .cart-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.cart-item-image {
+  width: 80px;
+  height: 80px;
+  background-color: #fff; /* ✅ changed from #fafafa */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cart-item-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.cart-item-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+        
+        .cart-item-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cart-item-price {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .cart-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.cart-item-quantity input {
+  width: 50px;
+  padding: 0.3rem;
+  font-size: 1rem;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fffefc;
+}
+/* Hide native input number arrows */
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.qty-input {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+.cart-item-quantity button {
+  background-color: var(--secondary);
+  color: white;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.cart-item-quantity button:hover {
+  background-color: #b8843b;
+}
+
+        
+        .cart-item-remove {
+  background-color: var(--error);
+  color: white;
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-left: 0.5rem;
+}
+
+.cart-item-remove:hover {
+  background-color: #c62828;
+}
+        
+        .cart-summary {
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .cart-summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cart-summary-total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #ddd;
+        }
+        
+        .age-verification {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .age-verification label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .age-verification input {
+            margin-right: 0.5rem;
+        }
+        
+        .id-upload {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .id-upload:hover {
+            border-color: var(--primary);
+        }
+        
+        .id-upload-input {
+            display: none;
+        }
+        
+        .id-upload-label {
+            cursor: pointer;
+        }
+        
+        .id-preview {
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .id-preview img {
+            max-width: 100%;
+            max-height: 200px;
+        }
+        
+        .checkout-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        
+        .checkout-step {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            background-color: #f1f1f1;
+            position: relative;
+        }
+        
+        .checkout-step.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .checkout-step:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 15px solid #f1f1f1;
+            z-index: 1;
+        }
+        
+        .checkout-step.active:not(:last-child)::after {
+            border-left-color: var(--primary);
+        }
+        @media (max-width: 768px) {
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+  }
+
+  .cart-item-image {
+    width: 100%;
+    height: auto;
+    justify-content: center;
+    background-color: transparent;
+    margin: 0;
+  }
+
+  .cart-item-image img {
+    width: 100px;
+    height: auto;
+  }
+
+  .cart-item-details {
+    width: 100%;
+  }
+
+  .cart-item-quantity {
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .cart-item-remove {
+    width: 100%;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+}
+
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+            }
+            
+            nav ul {
+                margin: 1rem 0;
+            }
+            
+            .feature-cards {
+                flex-direction: column;
+            }
+            
+            .checkout-steps {
+                flex-direction: column;
+            }
+            
+            .checkout-step:not(:last-child)::after {
+                display: none;
+            }
+        }
+        @media (max-width: 768px) {
+  .auth-cart-group {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+}
+@media (min-width: 769px) {
+  .action-buttons {
+    gap: 2rem;
+  }
+
+  #user-greeting {
+    flex-grow: 1;
+    text-align: center;
+  }
+}
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .logo {
+    justify-content: center;
+    font-size: 1.75rem;
+  }
+
+  nav ul {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  #user-greeting {
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    width: 100%;
+  }
+
+  .action-buttons {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .auth-cart-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #logout-button {
+    margin-left: 1rem;
+  }
+
+  .cart-icon {
+    margin-right: 1rem;
+  }
+}
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding-top: 2rem;
+  }
+
+  .logo {
+    font-size: 1.75rem;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .cart-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  nav ul {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .auth-cart-group {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  #user-greeting {
+    text-align: center;
+    font-weight: bold;
+    color: white;
+  }
+
+  #logout-button {
+    display: inline-block;
+  }
+}
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    text-align: center;
+    justify-content: center;
+    margin-bottom: 0.25rem;
+  }
+
+  .cart-icon {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+  }
+
+  nav ul {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.25rem 0;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+
+  .auth-cart-group {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+  }
+
+  #user-greeting {
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    font-size: 0.95rem;
+  }
+
+  #logout-button {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    text-align: center;
+    justify-content: center;
+    margin-bottom: 0.25rem;
+  }
+
+  .cart-icon {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+  }
+
+  nav ul {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.25rem 0;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+
+  #auth-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+
+  #user-greeting,
+#logout-button {
+  margin: 0;
+}
+
+.auth-loggedin {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+}
+
+  #user-greeting {
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    font-size: 0.95rem;
+  }
+
+  #logout-button {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+@media (max-width: 768px) {
+  .auth-section {
+    display: flex !important;
+    justify-content: center !important;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+  }
+
+  .auth-section button {
+    flex: 0 1 auto;
+  }
+
+  .auth-cart-group {
+    position: absolute !important;
+    top: 1rem;
+    right: 1rem;
+  }
+}
+#auth-loggedin {
+  flex-wrap: nowrap !important;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  overflow-x: auto;
+  flex-shrink: 1;
+}
+
+#user-greeting {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#logout-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+#shooter-options {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+    </style>
+</head>
+<script>
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.style.display = 'none';
+    }
+    
+    window.addEventListener('click', function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+    </script>
+   <script>
+    function openModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.classList.add('modal-open'); // Prevent background scroll
+  }
+}
+
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.classList.remove('modal-open'); // Re-enable scroll
+  }
+}
+
+  
+    // Optional: close modals when clicking outside content
+    window.addEventListener('click', function(e) {
+      document.querySelectorAll('.modal').forEach(modal => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+    });
+  </script>
+<!-- Login Modal -->
+<div class="modal" id="login-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Login</h2>
+        <button class="close-modal" onclick="closeModal('login-modal')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email">
+      </div>
+      
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password">
+      </div>
+      
+      <div class="form-footer">
+        <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Signup Modal -->
+<div class="modal" id="signup-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Sign Up</h2>
+        <button class="close-modal" onclick="closeModal('signup-modal')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="signup-name">Full Name</label>
+        <input type="text" id="signup-name" required />
+      </div>
+      
+  
+      <div class="form-group">
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" required />
+      </div>
+  
+      <div class="form-group">
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" required />
+      </div>
+  
+      <div class="form-group">
+        <label for="signup-phone">Phone Number</label>
+        <input type="tel" id="signup-phone" required />
+      </div>
+  
+      <div class="form-group">
+        <label for="signup-address">Delivery Address</label>
+        <input type="text" id="signup-address" placeholder="Start typing your address..." required />
+      </div>
+  
+      <div class="form-footer">
+        <button class="btn btn-primary" onclick="handleSignup()">Create Account</button>
+      </div>
+    </div>
+  </div>
+  
+  
+  <!-- Cart Modal -->
+  <div class="modal" id="cart-modal">
+    <div class="modal-content cart-modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Your Cart</h2>
+        <button class="close-modal" onclick="closeModal('cart-modal')">&times;</button>
+      </div>
+      <div class="cart-items" id="cart-items">
+        <!-- Cart items will go here -->
+      </div>
+      <div class="cart-summary">
+        <div class="cart-summary-row"><span>Subtotal:</span><span>$0.00</span></div>
+        <div class="cart-summary-total">Total: $0.00</div>
+        <!-- Shooter Upsell Suggestion -->
+<div id="shooter-upsell" style="display: none; padding: 1rem; margin-top: 1rem; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 6px;">
+  <p style="margin-bottom: 0.5rem;"><strong>🛒 You're almost there!</strong> Add a shooter to reach the $40 minimum:</p>
+  <div id="shooter-options" style="display: flex; flex-wrap: wrap; gap: 1rem;"></div>
+</div>
+
+        <div class="form-footer" style="margin-top: 1rem;">
+          <button class="btn btn-primary">Checkout</button>
+        </div>
+        <div class="form-group">
+  <label for="delivery-address">Delivery Address</label>
+  <input type="text" id="delivery-address" placeholder="Enter delivery address" required />
+  <button class="btn btn-outline" style="margin-top: 0.5rem;" onclick="useCurrentLocation()">Use Current Location</button>
+</div>
+
+          <div id="zoneWarning" style="color: red; font-weight: bold; display: none;"></div>          
+      </div>
+    </div>
+  </div>
+  
+    <header>
+        <div class="container header-content">
+            <a href="#" class="logo">Alcohol<span>Direct</span></a>
+            <nav>
+  <ul>
+    <li><a href="#hero" class="active">Home</a></li>
+    <li><a href="#categories">Shop</a></li>
+    <li><a href="#features">About Us</a></li>
+    <li><a href="#footer">Contact</a></li>
+  </ul>
+</nav>
+
+            <div class="action-buttons" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+  <!-- Auth Buttons (when logged out) -->
+<div id="auth-buttons" class="auth-section" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem;">
+  <button class="btn btn-outline" onclick="openModal('login-modal')">Login</button>
+  <button class="btn btn-primary" onclick="openModal('signup-modal')">Sign Up</button>
+</div>
+
+<!-- Auth Greeting (when logged in) -->
+<div id="auth-loggedin" class="auth-section" style="display: none; justify-content: center; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem;">
+  <span id="user-greeting" style="font-weight: bold; color: white;"></span>
+  <button id="logout-button" class="btn btn-outline" onclick="handleLogout()">Logout</button>
+</div>
+
+<!-- Cart Icon Top-Right -->
+<div class="auth-cart-group" style="position: absolute; top: 1rem; right: 1rem; display: flex; align-items: center;">
+  <div class="cart-icon" onclick="openModal('cart-modal')" style="cursor: pointer;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="21" r="1"></circle>
+      <circle cx="20" cy="21" r="1"></circle>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+    </svg>
+    <span class="cart-count" id="cart-count">0</span>
+  </div>
+</div>
+
+</div>
+
+    </header>
+    <section class="age-verification">
+      <div class="container">
+        <p style="font-size: 1.2rem; margin-bottom: 1rem;">
+          To shop, please verify your age. We use secure ID verification through Stripe.
+        </p>
+        <button class="btn btn-primary" onclick="verifyAge()">Verify Age</button>
+      </div>
+    </section>
+    
+    <section id="hero" class="hero">
+        <div class="container">
+            <h1>Sophisticated Spirits, Delivered</h1>
+            <p>Premium liquor delivered to your doorstep in 60 minutes or less. Unbeatable prices, exceptional selection.</p>
+            <div id="map" style="height: 400px; width: 100%; margin-top: 20px;"></div>
+
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Why Choose Alcohol Direct?</h2>
+            <div class="feature-cards">
+                <div class="feature-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c28133" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"></path><path d="M3 9l2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"></path><path d="M12 3v6"></path></svg>
+                    <h3>Fast Delivery</h3>
+                    <p>Get your order in 60 minutes or less, right to your doorstep.</p>
+                </div>
+                <div class="feature-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c28133" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 6v2"></path><path d="M12 16v2"></path></svg>
+                    <h3>Best Prices</h3>
+                    <p>We offer the most competitive prices in the market, guaranteed.</p>
+                </div>
+                <div class="feature-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c28133" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    <h3>Wide Selection</h3>
+                    <p>Browse through our extensive collection of premium spirits.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="categories" class="categories">
+        <div class="container">
+            <h2>Shop By Category</h2>
+            <div class="category-tabs">
+                <div class="category-tab active" data-category="all">All</div>
+                <div class="category-tab" data-category="whiskey">Whiskey</div>
+                <div class="category-tab" data-category="vodka">Vodka</div>
+                <div class="category-tab" data-category="rum">Rum</div>
+                <div class="category-tab" data-category="gin">Gin</div>
+                <div class="category-tab" data-category="tequila">Tequila</div>
+                <div class="category-tab" data-category="brandy">Brandy</div>
+                <div class="category-tab" data-category="shooters">Shooters</div>
+            </div>
+            <div class="products">
+                <!-- Whiskey Products -->
+<div class="product-card" data-category="whiskey">
+  <div class="product-image">
+    <img src="assets/images/jack-daniels.jpg" alt="Jack Daniel’s Tennessee Whiskey">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Jack Daniel’s Tennessee Whiskey (1.75L)</h3>
+    <div class="product-price">$49.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="whiskey1" data-name="Jack Daniel’s Tennessee Whiskey" data-price="49.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="whiskey">
+  <div class="product-image">
+    <img src="assets/images/fireball.jpg" alt="Fireball Cinnamon Whisky">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Fireball Cinnamon Whisky (1.75L)</h3>
+    <div class="product-price">$28.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="whiskey2" data-name="Fireball Cinnamon Whisky" data-price="28.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="whiskey">
+  <div class="product-image">
+    <img src="assets/images/evan-williams.jpg" alt="Evan Williams Black Bourbon">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Evan Williams Black Bourbon (1.75L)</h3>
+    <div class="product-price">$26.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="whiskey3" data-name="Evan Williams Black Bourbon" data-price="26.00">Add</button>
+    </div>
+  </div>
+</div>
+
+                
+                <!-- Vodka Products -->
+<div class="product-card" data-category="vodka">
+  <div class="product-image">
+    <img src="assets/images/titos-vodka.jpg" alt="Tito's Handmade Vodka">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Tito's Handmade Vodka (1.75L)</h3>
+    <div class="product-price">$32.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="vodka1" data-name="Tito's Handmade Vodka" data-price="32.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="vodka">
+  <div class="product-image">
+    <img src="assets/images/smirnoff-red.jpg" alt="Smirnoff Red Label Vodka">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Smirnoff Red Label Vodka (1.75L)</h3>
+    <div class="product-price">$27.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="vodka2" data-name="Smirnoff Red Label Vodka" data-price="27.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="vodka">
+  <div class="product-image">
+    <img src="assets/images/new-amsterdam-vodka.jpg" alt="New Amsterdam Vodka">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">New Amsterdam Vodka (1.75L)</h3>
+    <div class="product-price">$22.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="vodka3" data-name="New Amsterdam Vodka" data-price="22.00">Add</button>
+    </div>
+  </div>
+</div>
+
+
+                
+                <!-- Rum Products -->
+<div class="product-card" data-category="rum">
+  <div class="product-image">
+    <img src="assets/images/captain-morgan.jpg" alt="Captain Morgan Spiced Rum">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Captain Morgan Spiced Rum (1.75L)</h3>
+    <div class="product-price">$31.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="rum1" data-name="Captain Morgan Spiced Rum" data-price="31.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="rum">
+  <div class="product-image">
+        <img src="assets/images/bacardi-white.jpg" alt="Bacardi Superior White Rum">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Bacardi Superior White Rum (1.75L)</h3>
+    <div class="product-price">$30.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="rum2" data-name="Bacardi Superior White Rum" data-price="30.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="rum">
+  <div class="product-image">
+    <img src="assets/images/malibu.jpg" alt="Malibu Coconut Rum">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Malibu Coconut Rum (1.75L)</h3>
+    <div class="product-price">$35.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="rum3" data-name="Malibu Coconut Rum" data-price="35.00">Add</button>
+    </div>
+  </div>
+</div>
+
+                
+                <!-- Gin Products -->
+<div class="product-card" data-category="gin">
+  <div class="product-image">
+    <img src="assets/images/tanqueray-gin.jpg" alt="Tanqueray London Dry Gin">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Tanqueray London Dry Gin (750ml)</h3>
+    <div class="product-price">$32.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="gin1" data-name="Tanqueray London Dry Gin" data-price="32.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="gin">
+  <div class="product-image">
+    <img src="assets/images/new-amsterdam-gin.jpg" alt="New Amsterdam Gin">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">New Amsterdam Gin (750ml)</h3>
+    <div class="product-price">$25.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="gin2" data-name="New Amsterdam Gin" data-price="25.00">Add</button>
+    </div>
+  </div>
+</div>
+
+                
+                <!-- Tequila Products -->
+<div class="product-card" data-category="tequila">
+  <div class="product-image">
+    <img src="assets/images/jose-cuervo.jpg" alt="Jose Cuervo Gold Tequila">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Jose Cuervo Gold Tequila (1.75L)</h3>
+    <div class="product-price">$34.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="tequila1" data-name="Jose Cuervo Gold Tequila" data-price="34.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="tequila">
+  <div class="product-image">
+    <img src="assets/images/1800-silver.jpg" alt="1800 Silver Tequila">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">1800 Silver Tequila (1.75L)</h3>
+    <div class="product-price">$42.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="tequila2" data-name="1800 Silver Tequila" data-price="42.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="tequila">
+  <div class="product-image">
+    <img src="assets/images/espolon-blanco.jpg" alt="Espolon Blanco Tequila">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Espolon Blanco Tequila (750ml)</h3>
+    <div class="product-price">$34.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="tequila3" data-name="Espolon Blanco Tequila" data-price="34.00">Add</button>
+    </div>
+  </div>
+</div>
+<!-- Liqueur Products -->
+<div class="product-card" data-category="liqueur">
+  <div class="product-image">
+    <img src="assets/images/baileys.jpg" alt="Baileys Irish Cream">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Baileys Irish Cream (750ml)</h3>
+    <div class="product-price">$20.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="liq1" data-name="Baileys Irish Cream" data-price="20.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="liqueur">
+  <div class="product-image">
+    <img src="assets/images/rumchata.jpg" alt="RumChata">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">RumChata (750ml)</h3>
+    <div class="product-price">$21.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="liq2" data-name="RumChata" data-price="21.00">Add</button>
+    </div>
+  </div>
+</div>
+<!-- Cognac Products -->
+<div class="product-card" data-category="brandy">
+  <div class="product-image">
+    <img src="assets/images/hennessy.jpg" alt="Hennessy VS Cognac">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Hennessy VS Cognac (750ml)</h3>
+    <div class="product-price">$60.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="cognac1" data-name="Hennessy VS Cognac" data-price="60.00">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="brandy">
+  <div class="product-image">
+    <img src="assets/images/remy-martin.jpg" alt="Rémy Martin VSOP Cognac">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Rémy Martin VSOP Cognac (750ml)</h3>
+    <div class="product-price">$72.00</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="cognac2" data-name="Rémy Martin VSOP Cognac" data-price="72.00">Add</button>
+    </div>
+  </div>
+</div>
+<!-- Shooter Products -->
+<div class="product-card" data-category="shooters">
+  <div class="product-image">
+    <img src="assets/images/fireball-50ml.jpeg" alt="Fireball 50ml">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Fireball 50ml</h3>
+    <div class="product-price">$1.99</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="shooter1" data-name="Fireball 50ml" data-price="1.99">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="shooters">
+  <div class="product-image">
+    <img src="assets/images/titos-50ml.jpg" alt="Tito's 50ml">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Tito's 50ml</h3>
+    <div class="product-price">$2.25</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="shooter2" data-name="Tito's 50ml" data-price="2.25">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="shooters">
+  <div class="product-image">
+        <img src="assets/images/pink-whitney-50ml.jpg" alt="Pink Whitney 50ml">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Pink Whitney 50ml</h3>
+    <div class="product-price">$1.99</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="shooter3" data-name="Pink Whitney 50ml" data-price="1.99">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="product-card" data-category="shooters">
+  <div class="product-image">
+    <img src="assets/images/crown-royal-50ml.jpg" alt="Crown Royal 50ml">
+  </div>
+  <div class="product-info">
+    <h3 class="product-title">Crown Royal 50ml</h3>
+    <div class="product-price">$2.49</div>
+    <div class="product-actions">
+      <div class="quantity-control">
+        <button class="qty-decrease">-</button>
+        <input type="number" value="1" min="1" class="qty-input">
+        <button class="qty-increase">+</button>
+      </div>
+      <button class="add-to-cart" data-id="shooter4" data-name="Crown Royal 50ml" data-price="2.49">Add</button>
+    </div>
+  </div>
+</div>
+</div> <!-- End of .products -->
+</div> <!-- End of .container -->
+</section> <!-- End of #categories -->
+
+
+
+                            
+                            <!-- Delivery scheduler script -->
+<script src="delivery.js"></script>
+  
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+<!-- ✅ Final working scripts block -->
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const map = L.map('map', {
+      zoomSnap: 0.5,
+      zoomDelta: 0.5,
+      scrollWheelZoom: true,
+      zoomAnimation: true,
+      zoomAnimationThreshold: 4,
+      wheelPxPerZoomLevel: 40,
+      inertia: true,
+      inertiaDeceleration: 3000,
+      easeLinearity: 0.25
+    });
+
+    L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}@2x.png?key=2XRiOWbTcOv8QGSvM2Rk', {
+      attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> & OpenStreetMap contributors',
+      tileSize: 512,
+      zoomOffset: -1
+    }).addTo(map);
+
+    if (window.deliveryZone) {
+      const zoneLayer = L.geoJSON(window.deliveryZone, {
+        style: {
+          color: '#007BFF',
+          weight: 2,
+          fillColor: '#007BFF',
+          fillOpacity: 0.2
+        }
+      }).addTo(map);
+      map.fitBounds(zoneLayer.getBounds());
+    } else {
+      console.error("❌ deliveryZone not loaded");
+    }
+
+    const signupEl = document.getElementById("signup-address");
+    if (signupEl) {
+      new Geoapify.GeocoderAutocomplete(signupEl, "64e2bfff967343f6a4efe674ef43a213", {
+        placeholder: "Start typing your address...",
+        type: "address",
+        skipIcons: true
+      });
+    }
+
+    const deliveryInput = document.getElementById("delivery-address");
+    const warningDiv = document.getElementById("zoneWarning");
+    const checkoutBtn = document.querySelector("#cart-modal .btn.btn-primary");
+
+    if (deliveryInput) {
+      deliveryInput.addEventListener("blur", async () => {
+        const address = deliveryInput.value.trim();
+        if (!address) return;
+
+        try {
+          const res = await fetch(`https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(address)}&apiKey=64e2bfff967343f6a4efe674ef43a213`);
+          const data = await res.json();
+
+          if (!data.features.length) {
+            warningDiv.textContent = "Address not found.";
+            warningDiv.style.display = "block";
+            checkoutBtn.disabled = true;
+            return;
+          }
+
+          const { lat, lon } = data.features[0].properties;
+          const point = turf.point([lon, lat]);
+          const zone = window.deliveryZone;
+
+          const inside = turf.booleanPointInPolygon(point, zone);
+          if (inside) {
+            warningDiv.style.display = "none";
+            checkoutBtn.disabled = false;
+          } else {
+            warningDiv.textContent = "❌ Sorry, this address is outside our delivery zone.";
+            warningDiv.style.display = "block";
+            checkoutBtn.disabled = true;
+          }
+        } catch (err) {
+          console.error("Geoapify error:", err);
+          warningDiv.textContent = "❌ Error checking address.";
+          warningDiv.style.display = "block";
+          checkoutBtn.disabled = true;
+        }
+      });
+    }
+  });
+</script>
+
+
+<script>
+  async function handleSignup() {
+
+      const name = document.getElementById("signup-name").value.trim();
+      const email = document.getElementById("signup-email").value.trim();
+      const password = document.getElementById("signup-password").value.trim();
+      const phone = document.getElementById("signup-phone").value.trim();
+      const address = document.getElementById("signup-address").value.trim();
+  
+      if (!name || !email || !password || !phone || !address) {
+        alert("Please fill out all fields.");
+        return;
+      }
+  
+      try {
+        const { auth, db, createUserWithEmailAndPassword, setDoc, doc } = window.firebaseStuff;
+  
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+  
+        await setDoc(doc(db, "users", user.uid), {
+          name: name,
+          email: email,
+          phone: phone,
+          address: address,
+          createdAt: new Date().toISOString()
+        });
+  
+        localStorage.setItem("userName", name);
+        localStorage.setItem("userAddress", address);
+  
+        alert("✅ Account created!");
+        closeModal("signup-modal");
+      } catch (error) {
+        console.error("Signup error:", error);
+        alert("❌ " + error.message);
+      }
+    }
+  </script>
+  
+    
+       
+            <script type="module">
+                import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+                import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+                import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+              
+                const firebaseConfig = {
+  apiKey: "AIzaSyDsa-NLEnx4Y04K9C_rCPuhpnIsj7sJB0k",
+  authDomain: "alcohol-direct-c4b06.firebaseapp.com",
+  projectId: "alcohol-direct-c4b06",
+  storageBucket: "alcohol-direct-c4b06.appspot.com",
+  messagingSenderId: "219671150829",
+  appId: "1:219671150829:web:2ae00c297fbee6e2074ce4",
+  measurementId: "G-D6PYS64RWM"
+};
+              
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+              
+                // Store globally so you can use it later in handleSignup()
+                window.firebaseStuff = {
+  auth,
+  db,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, // ✅ this was missing
+  setDoc,
+  getDoc,
+  doc
+};
+
+              </script>
+               <script>
+                async function handleLogin() {
+                  const email = document.getElementById("login-email").value.trim();
+                  const password = document.getElementById("login-password").value.trim();
+              
+                  if (!email || !password) {
+                    alert("Please enter email and password.");
+                    return;
+                  }
+              
+                  try {
+                    const { auth, db, signInWithEmailAndPassword, getDoc, doc } = window.firebaseStuff;
+              
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+              
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    const userData = userDoc.data();
+              
+                    console.log("✅ Firestore user data:", userData);
+              
+                    if (userData?.name) {
+                      localStorage.setItem("userName", userData.name);
+                      console.log("✅ Saved name:", userData.name);
+                      const greetingEl = document.getElementById("user-greeting");
+                      greetingEl.textContent = `Welcome, ${userData.name.split(" ")[0]}!`;
+                      greetingEl.style.display = "inline-block";
+                    }
+              
+                    if (userData?.address) {
+                      localStorage.setItem("userAddress", userData.address);
+                    }
+              
+                    document.getElementById("auth-buttons").style.display = "none";
+                    document.getElementById("logout-button").style.display = "inline-block";
+              
+                    alert("✅ Login successful!");
+                    closeModal("login-modal");
+                  } catch (error) {
+                    console.error("Firebase login error:", error);
+                    alert("❌ " + error.message);
+                  }
+                }
+              </script>
+              
+              
+
+                            
+                <script>
+                    // Prefill saved address in Cart modal from localStorage
+                    document.querySelector('.cart-icon').addEventListener('click', () => {
+                      const savedAddress = localStorage.getItem('userAddress');
+                      const deliveryInput = document.getElementById('delivery-address');
+                      if (savedAddress && deliveryInput) {
+                        deliveryInput.value = savedAddress;
+                      }
+                    });
+                  </script>
+                  
+                
+                    
+                    
+
+
+                  <script>
+                    function handleLogout() {
+  localStorage.removeItem("userName");
+  localStorage.removeItem("userAddress");
+
+  const greetingEl = document.getElementById("user-greeting");
+  const authButtons = document.getElementById("auth-buttons");
+  const logoutButton = document.getElementById("logout-button");
+
+  if (greetingEl) greetingEl.textContent = "";
+  if (logoutButton) logoutButton.style.display = "none";
+  if (authButtons) {
+    authButtons.style.display = "flex";
+    // Ensure its buttons are visible
+    authButtons.querySelectorAll("button").forEach(btn => {
+      btn.style.display = "inline-block";
+    });
+  }
+}
+
+
+                  </script>
+                  
+                  <script>
+                    window.addEventListener("load", () => {
+  const name = localStorage.getItem("userName");
+  const address = localStorage.getItem("userAddress");
+
+  const greetingEl = document.getElementById("user-greeting");
+  const authButtons = document.getElementById("auth-buttons");
+  const logoutButton = document.getElementById("logout-button");
+  const deliveryInput = document.getElementById("delivery-address");
+
+  if (name && greetingEl) {
+    greetingEl.textContent = `Welcome, ${name.split(" ")[0]}!`;
+    greetingEl.style.cssText = "display: inline-block; color: white; font-weight: bold;";
+  }
+
+  if (authButtons) {
+    authButtons.style.display = name ? "none" : "flex";
+    authButtons.querySelectorAll("button").forEach(btn => {
+      btn.style.display = name ? "none" : "inline-block";
+    });
+  }
+
+  if (logoutButton) logoutButton.style.display = name ? "inline-block" : "none";
+  if (address && deliveryInput) deliveryInput.value = address;
+});
+
+
+                  </script>
+                  
+                  
+                  <script>
+const shooterProducts = [
+  { id: "shooter1", name: "Fireball 50ml", price: 1.99, image: "fireball-50ml.jpeg" },
+  { id: "shooter2", name: "Titos 50ml", price: 2.25, image: "titos-50ml.jpg" },
+  { id: "shooter3", name: "Pink Whitney 50ml", price: 1.99, image: "pink-whitney-50ml.jpg" },
+  { id: "shooter4", name: "Crown Royal 50ml", price: 2.49, image: "crown-royal-50ml.jpg" }
+];
+
+
+function renderShooterUpsell(cartTotal) {
+  const upsellBox = document.getElementById("shooter-upsell");
+  const options = document.getElementById("shooter-options");
+
+ if (cartTotal < 40) {
+  upsellBox.style.display = "block";
+  options.innerHTML = shooterProducts.map(p => `
+    <div class="shooter-card" onclick="addShooter('${p.id}', '${p.name}', ${p.price}, '${p.image}')" style="flex: 1 1 120px; max-width: 140px; text-align: center; padding: 1rem; border-radius: 8px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+      <img src="assets/images/${p.image}" alt="${p.name}" style="width: 60px; height: 60px; object-fit: contain; border-radius: 6px; margin-bottom: 0.5rem;" />
+      <div style="font-weight: bold; font-size: 0.9rem;">${p.name}</div>
+      <div style="color: var(--accent); font-size: 0.85rem;">$${p.price.toFixed(2)}</div>
+    </div>
+  `).join("");
+} else {
+  upsellBox.style.display = "none";
+}
+}
+
+function addShooter(id, name, price, image) {
+  const existing = cart.find(item => item.id === id);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({ id, name, price, quantity: 1, image: `assets/images/${image}` });
+  }
+  updateCartCount();
+}
+
+
+
+
+  function updateCartCount() {
+    const count = cart.reduce((total, item) => total + item.quantity, 0);
+    document.getElementById('cart-count').innerText = count;
+
+    const cartItemsContainer = document.getElementById('cart-items');
+    cartItemsContainer.innerHTML = '';
+
+    let total = 0;
+
+    cart.forEach(item => {
+      const itemEl = document.createElement('div');
+      itemEl.className = 'cart-item';
+      itemEl.innerHTML = `
+        <div class="cart-item-image">
+          <img src="${item.image}" alt="${item.name}">
+        </div>
+        <div class="cart-item-details">
+          <div class="cart-item-title">${item.name}</div>
+          <div class="cart-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+        </div>
+        <div class="cart-item-quantity">
+  <button class="qty-decrease" data-id="${item.id}">−</button>
+  <input type="number" class="qty-input" value="${item.quantity}" min="1" data-id="${item.id}" />
+  <button class="qty-increase" data-id="${item.id}">+</button>
+</div>
+<button class="cart-item-remove" data-id="${item.id}">Remove</button>
+
+      `;
+      cartItemsContainer.appendChild(itemEl);
+      total += item.price * item.quantity;
+    });
+
+    document.querySelector('.cart-summary-row span:last-child').textContent = `$${total.toFixed(2)}`;
+    document.querySelector('.cart-summary-total').textContent = `Total: $${total.toFixed(2)}`;
+
+    document.querySelectorAll('.cart-item-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        cart = cart.filter(item => item.id !== id);
+        updateCartCount();
+      });
+    });
+
+    document.querySelectorAll('.cart-item-quantity input').forEach(input => {
+  input.addEventListener('change', (e) => {
+    const id = input.dataset.id;
+    let newQty = parseInt(input.value);
+    if (isNaN(newQty) || newQty < 1) newQty = 1;
+    input.value = newQty;
+
+    const item = cart.find(i => i.id === id);
+    if (item) {
+      item.quantity = newQty;
+      localStorage.setItem("cartData", JSON.stringify(cart)); // ✅ persist immediately
+      updateCartCount(); // ✅ refresh display
+    }
+  });
+});
+    renderShooterUpsell(total);
+    attachCartQuantityEvents();
+    localStorage.setItem("cartData", JSON.stringify(cart));
+  }
+  function attachCartQuantityEvents() {
+  document.querySelectorAll('.cart-item-quantity').forEach(container => {
+    const input = container.querySelector('input');
+    const plusBtn = container.querySelector('.qty-increase');
+    const minusBtn = container.querySelector('.qty-decrease');
+
+    if (plusBtn) {
+      plusBtn.addEventListener('click', () => {
+        input.value = parseInt(input.value) + 1;
+        input.dispatchEvent(new Event('change'));
+      });
+    }
+
+    if (minusBtn) {
+      minusBtn.addEventListener('click', () => {
+        if (parseInt(input.value) > 1) {
+          input.value = parseInt(input.value) - 1;
+          input.dispatchEvent(new Event('change'));
+        }
+      });
+    }
+  });
+}
+let cart = [];
+try {
+  const storedCart = localStorage.getItem("cartData");
+  cart = storedCart ? JSON.parse(storedCart) : [];
+} catch (err) {
+  console.warn("⚠️ Error parsing stored cart:", err);
+  localStorage.removeItem("cartData"); // wipe corrupted data
+  cart = [];
+}
+
+// DOMContentLoaded block
+window.addEventListener("DOMContentLoaded", () => {
+  // Handle Add to Cart
+  document.querySelectorAll('.add-to-cart').forEach(button => {
+      button.addEventListener('click', () => {
+        const id = button.dataset.id;
+        const name = button.dataset.name;
+        const price = parseFloat(button.dataset.price);
+        const quantityInput = button.parentElement.querySelector('.qty-input');
+        const quantity = parseInt(quantityInput.value);
+
+        const existingItem = cart.find(item => item.id === id);
+        if (existingItem) {
+          existingItem.quantity += quantity;
+        } else {
+          const image = button.closest('.product-card').querySelector('img').getAttribute('src');
+cart.push({ id, name, price, quantity, image });
+
+        }
+
+        updateCartCount();
+      });
+    });
+    document.querySelectorAll('.qty-increase').forEach(button => {
+    button.addEventListener('click', () => {
+      const input = button.closest('.quantity-control').querySelector('.qty-input');
+      input.value = parseInt(input.value) + 1;
+    });
+  });
+
+  document.querySelectorAll('.qty-decrease').forEach(button => {
+    button.addEventListener('click', () => {
+      const input = button.closest('.quantity-control').querySelector('.qty-input');
+      const newVal = Math.max(1, parseInt(input.value) - 1);
+      input.value = newVal;
+    });
+  });
+  function clearCart() {
+    cart = [];
+    localStorage.removeItem("cartData");
+    updateCartCount();
+  }
+
+  function handleCheckout() {
+    if (cart.length === 0) {
+      alert("🛒 Your cart is already empty.");
+      return;
+    }
+
+    alert("✅ Order placed successfully!");
+    clearCart();
+    closeModal('cart-modal');
+  }
+
+  updateCartCount();
+  });
+</script>
+<script>
+  document.querySelectorAll(".category-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      // Remove 'active' from all tabs
+      document.querySelectorAll(".category-tab").forEach(t => t.classList.remove("active"));
+      // Add 'active' to clicked tab
+      tab.classList.add("active");
+
+      const category = tab.getAttribute("data-category");
+      const products = document.querySelectorAll(".product-card");
+
+      products.forEach(card => {
+        if (category === "all" || card.getAttribute("data-category") === category) {
+          card.style.display = "block";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    });
+  });
+</script>
+<footer id="footer">
+  <div class="container footer-content">
+    <div class="footer-section">
+      <h3>Alcohol Direct</h3>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Use</a></li>
+        <li><a href="#">Delivery Info</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h3>Contact Us</h3>
+      <ul>
+        <li><a href="mailto:support@alcoholdirect.com">support@alcoholdirect.com</a></li>
+        <li><a href="#">(123) 456-7890</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h3>Follow Us</h3>
+      <div class="social-icons">
+        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2025 Alcohol Direct. All rights reserved.
+  </div>
+</footer>
+<script>
+  async function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const { latitude, longitude } = position.coords;
+      try {
+        const res = await fetch(`https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=64e2bfff967343f6a4efe674ef43a213`);
+        const data = await res.json();
+        if (data.features.length) {
+          const address = data.features[0].properties.formatted;
+          document.getElementById("delivery-address").value = address;
+        } else {
+          alert("Unable to determine address.");
+        }
+      } catch (err) {
+        console.error("Geoapify reverse geocode error:", err);
+        alert("Error retrieving location.");
+      }
+    }, () => {
+      alert("Unable to retrieve your location.");
+    });
+  }
+</script>
+
+                            </body>
+                            </html>
+                        
+                        
